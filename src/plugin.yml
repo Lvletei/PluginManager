@@ -1,0 +1,51 @@
+name: PluginManager
+version: 1.0.2
+author: Technius
+website: skycraftmc.net
+description: A plugin used for managing plugins
+main: net.skycraftmc.PluginManager.PluginManagerPlugin
+commands:
+    pluginmanager:
+        description: PluginManager commands
+        usage: /pm <arguments>
+        aliases: [plman, plm, pm]
+permissions:
+    pluginmanager.*:
+        default: false
+        description: Gives all PluginManager permissions
+        children:
+            pluginmanager.list: true
+            pluginmanager.enable: true
+            pluginmanager.disable: true
+            pluginmanager.load: true
+            pluginmanager.unload: true
+            pluginmanager.reload: true
+            pluginmanager.show: true
+            pluginmanager.softreload: true
+            pluginmanager.cmd.*: true
+    pluginmanager.cmd.*:
+        default: false
+        description: Gives all PluginManager cmd permissions
+        children:
+            pluginmanager.cmd.unregister: true
+            pluginmanager.cmd.priority: true
+    pluginmanager.list:
+        default: false
+    pluginmanager.enable:
+        default: false
+    pluginmanager.disable:
+        default: false
+    pluginmanager.load:
+        default: false
+    pluginmanager.unload:
+        default: false
+    pluginmanager.reload:
+        default: false
+    pluginmanager.show:
+        default: false
+    pluginmanager.softreload:
+        default: false
+    pluginmanager.cmd.unregister:
+        default: false
+    pluginmanager.cmd.priority:
+        default: false
