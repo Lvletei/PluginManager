@@ -3,6 +3,7 @@ package net.skycraftmc.PluginManager;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.java.PluginClassLoader;
 
 public class PluginControl 
 {
@@ -243,7 +245,28 @@ public class PluginControl
 				}
 	        }
 		}
+		closeClassLoader(plugin);
 		return true;
+	}
+	public boolean closeClassLoader(Plugin plugin)
+	{
+		ClassLoader cl = plugin.getClass().getClassLoader();
+		if(cl instanceof PluginClassLoader)
+		{
+			PluginClassLoader pcl = (PluginClassLoader)cl;
+			try {
+				Method m = pcl.getClass().getMethod("close");
+				m.setAccessible(true);
+				m.invoke(pcl);
+				return true;
+			} catch (NoSuchMethodException e) {
+			} catch (SecurityException e) {
+			} catch (IllegalAccessException e) {
+			} catch (IllegalArgumentException e) {
+			} catch (InvocationTargetException e) {
+			}
+		}
+		return false;
 	}
 	public boolean changeDataFolder(JavaPlugin plugin, String name)
 	{
