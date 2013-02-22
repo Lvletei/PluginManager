@@ -29,7 +29,26 @@ public class PluginManagerPlugin extends JavaPlugin
 			getLogger().severe("Failed to start!");
 			setEnabled(false);
 			e.printStackTrace();
+			return;
 		}
+		getServer().getScheduler().runTaskAsynchronously(this, new Runnable(){
+			public void run()
+			{
+				try
+				{
+					UpdateInformation inf = Updater.findUpdate("pm-pluginmanager");
+					if(!getDescription().getVersion().equals(inf.getVersion()))
+					{
+						getLogger().info("A new version of PluginManager is available: " 
+								+ inf.getVersion());
+					}
+				}
+				catch(Exception e)
+				{
+					getLogger().warning("Could not find update: " + e.getMessage());
+				}
+			}
+		});
 	}
 	public void onDisable()
 	{
