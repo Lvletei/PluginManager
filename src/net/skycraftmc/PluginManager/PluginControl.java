@@ -22,12 +22,14 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.java.JavaPluginLoader;
 import org.bukkit.plugin.java.PluginClassLoader;
 
 public class PluginControl 
 {
 	private SimpleCommandMap scm;
 	private Map<String, Command> kc;
+	private Field loadersF;
 	@SuppressWarnings("unchecked")
 	public PluginControl() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException
 	{
@@ -244,6 +246,24 @@ public class PluginControl
 					}
 				}
 	        }
+		}
+		JavaPluginLoader jpl = (JavaPluginLoader)plugin.getPluginLoader();
+		if(loadersF == null)
+		{
+			try {
+				loadersF = jpl.getClass().getDeclaredField("loaders0");
+				loadersF.setAccessible(true);
+			} catch (Exception e){
+				e.printStackTrace();
+			}
+		}
+		try {
+			Map<String, ClassLoader>loaderMap = (Map<String, ClassLoader>) loadersF.get(jpl);
+			loaderMap.remove(plugin.getDescription().getName());
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
 		}
 		closeClassLoader(plugin);
 		System.gc();
