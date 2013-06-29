@@ -246,6 +246,8 @@ public class PluginControl
 	        }
 		}
 		closeClassLoader(plugin);
+		System.gc();
+		System.gc();
 		return true;
 	}
 	public boolean closeClassLoader(Plugin plugin)
