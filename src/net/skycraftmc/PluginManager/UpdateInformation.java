@@ -2,27 +2,27 @@ package net.skycraftmc.PluginManager;
 
 import java.net.URL;
 
-public class UpdateInformation 
-{
+public class UpdateInformation {
+
 	private String version;
-	private URL link;
-	private String desc;
-	public UpdateInformation(String version, URL link, String desc)
-	{
+	private URL    link;
+	private String changelog;
+
+	public UpdateInformation(String version, URL link, String changelog) {
 		this.link = link;
-		this.version = version.split("[ ]+", 2)[1];
-		this.desc = desc;
+		this.version = version;
+		this.changelog = changelog;
 	}
-	public URL getLink()
-	{
+
+	public String getChangelog() {
+		return changelog;
+	}
+
+	public URL getLink() {
 		return link;
 	}
-	public String getVersion()
-	{
+
+	public String getVersion() {
 		return version;
-	}
-	public String getDescription()
-	{
-		return desc;
 	}
 }
