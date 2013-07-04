@@ -51,11 +51,11 @@ public class PluginControl {
 			f = plugin.getDescription().getClass().getDeclaredField("dataFolder");
 			f.setAccessible(true);
 			f.set(plugin, new File("plugins" + File.separator + name));
-		} catch (SecurityException | NoSuchFieldException e) {
+		} 
+		catch (Exception e)
+		{
 			e.printStackTrace();
 			return false;
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
 		}
 
 		return true;
@@ -140,10 +140,16 @@ public class PluginControl {
 
 			PluginDescriptionFile pdf = new PluginDescriptionFile(jf.getInputStream(pyml));
 			return pdf;
-		} catch (IOException | InvalidDescriptionException ioe) {
+		} 
+		catch (IOException ioe)
+		{
 			ioe.printStackTrace();
-			return null;
 		}
+		catch(InvalidDescriptionException ioe)
+		{
+			ioe.printStackTrace();
+		}
+		return null;
 	}
 
 	public File getFile(JavaPlugin p) {
@@ -152,7 +158,7 @@ public class PluginControl {
 			f = JavaPlugin.class.getDeclaredField("file");
 			f.setAccessible(true);
 			return (File) f.get(p);
-		} catch (SecurityException | IllegalAccessException | IllegalArgumentException | NoSuchFieldException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
@@ -173,18 +179,6 @@ public class PluginControl {
 			return true;
 
 		return false;
-	}
-
-	public Plugin loadPlugin(String name) {
-		Plugin plugin;
-		try {
-			plugin = Bukkit.getServer().getPluginManager().loadPlugin(new File("plugins" + File.separator + name + ".jar"));
-		} catch (InvalidPluginException | InvalidDescriptionException | UnknownDependencyException e) {
-			e.printStackTrace();
-			return null;
-		}
-
-		return plugin;
 	}
 
 	public void registerCommands(Plugin p) {
@@ -226,7 +220,7 @@ public class PluginControl {
 			plF = spm.getClass().getDeclaredField("plugins");
 			plF.setAccessible(true);
 			pl = (List<Plugin>) plF.get(spm);
-		} catch (SecurityException | NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}
@@ -263,7 +257,7 @@ public class PluginControl {
 		try {
 			Map<String, ClassLoader> loaderMap = (Map<String, ClassLoader>) loadersF.get(jpl);
 			loaderMap.remove(plugin.getDescription().getName());
-		} catch (IllegalArgumentException | IllegalAccessException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
@@ -288,5 +282,26 @@ public class PluginControl {
 		}
 
 		return true;
+	}
+	
+	public Plugin loadPlugin(String name) {
+		Plugin plugin;
+		try {
+			plugin = Bukkit.getServer().getPluginManager().loadPlugin(new File("plugins" + File.separator + name + ".jar"));
+			return plugin;
+		} 
+		catch (InvalidPluginException e)
+		{ 
+			e.printStackTrace();
+		}
+		catch (InvalidDescriptionException e)
+		{ 
+			e.printStackTrace();
+		}
+		catch (UnknownDependencyException e)
+		{ 
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

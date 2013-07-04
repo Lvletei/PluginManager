@@ -346,42 +346,19 @@ public class PMCommandExecutor implements CommandExecutor {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (args.length >= 1)
-			//using switch at this point, is much faster and needs less performance than using if/else/else if
-			switch (args[0].toLowerCase()) {
-				case "list":
-					return listCmd(sender, args);
+		{
+			if(args[0].equalsIgnoreCase("list"))return listCmd(sender, args);
+			else if(args[0].equalsIgnoreCase("enable"))return enableCmd(sender, args);
+			else if(args[0].equalsIgnoreCase("disable"))return disableCmd(sender, args);
+			else if(args[0].equalsIgnoreCase("load"))return loadCmd(sender, args);
+			else if(args[0].equalsIgnoreCase("unload"))return unloadCmd(sender, args);
+			else if(args[0].equalsIgnoreCase("reload"))return reloadCmd(sender, args);
+			else if(args[0].equalsIgnoreCase("sreload") || args[0].equalsIgnoreCase("softreload"))return sreloadCmd(sender, args);
+			else if(args[0].equalsIgnoreCase("show"))return showCmd(sender, args);
+			else if(args[0].equalsIgnoreCase("cmd"))return cmdCmd(sender, args);
+			else return msg(sender, ChatColor.GOLD + "Command unrecognized.  Type " + ChatColor.AQUA + "/plm" + ChatColor.GOLD + " for help");
 
-				case "enable":
-					return enableCmd(sender, args);
-
-				case "disable":
-					return disableCmd(sender, args);
-
-				case "load":
-					return loadCmd(sender, args);
-
-				case "unload":
-					return unloadCmd(sender, args);
-
-				case "reload":
-					return reloadCmd(sender, args);
-
-				case "softreload":
-					return sreloadCmd(sender, args);
-
-				case "sreload":
-					return sreloadCmd(sender, args);
-
-				case "show":
-					return showCmd(sender, args);
-
-				case "cmd":
-					return cmdCmd(sender, args);
-
-				default:
-					return msg(sender, ChatColor.GOLD + "Command unrecognized.  Type " + ChatColor.AQUA + "/plm" + ChatColor.GOLD + " for help");
-
-			}
+		}
 		else
 			helpCmd(sender, args, "PluginManager", help);
 		return true;
