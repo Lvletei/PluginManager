@@ -5,7 +5,7 @@ import java.net.URL;
 public class UpdateInformation {
 
 	private String version;
-	private URL    link;
+	private URL link;
 	private String changelog;
 
 	public UpdateInformation(String version, URL link, String changelog) {

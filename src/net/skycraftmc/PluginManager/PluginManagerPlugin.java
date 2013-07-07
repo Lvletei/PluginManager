@@ -5,7 +5,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class PluginManagerPlugin extends JavaPlugin {
 
 	private PluginControl control;
-	private boolean       unl = false;
+	private boolean unl = false;
 
 	public PluginControl getPluginControl() {
 		return control;
