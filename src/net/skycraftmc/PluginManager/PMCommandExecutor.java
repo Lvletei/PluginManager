@@ -1,8 +1,12 @@
 package net.skycraftmc.PluginManager;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import net.skycraftmc.PluginManager.DBOUtilities.VersionInformation;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -482,7 +486,6 @@ public class PMCommandExecutor implements CommandExecutor
 
 			public void run()
 			{
-				System.out.println(args[2]);
 		        List<SlugInformation> slugInfo = DBOUtilities.getSlugInformationList(args[2]);
 
 		        if(slugInfo.size() == 0)
@@ -497,6 +500,42 @@ public class PMCommandExecutor implements CommandExecutor
 		        }
 			}
         	
+        }.runTaskAsynchronously(pluginMngr);
+
+        return true;
+    }
+    
+    private boolean plugGetCheckCmd(final CommandSender sender, final String[] args)
+    {
+        if(noPerm(sender, "pluginmanager.plugget.check"))return true;
+
+        if(args.length != 3)return usage(sender, "plm plug-get check <slug>");
+        
+        new BukkitRunnable()
+        {
+			public void run()
+			{
+				try
+				{
+					VersionInformation ver = DBOUtilities.getLatestVersion(args[2].toLowerCase());
+					if(ver == null)sender.sendMessage(ChatColor.RED + "\"" + args[2] + "\" does not exist!");
+					else if(ver.version == null)sender.sendMessage(ChatColor.YELLOW + "No version of the plugin exists on BukkitDev yet.");
+					else
+					{
+						sender.sendMessage(ChatColor.GREEN + "The latest version of \"" + args[2] + "\" is " + ver.version + " (" + ver.type + ")");
+					}
+				} 
+				catch (MalformedURLException e)
+				{
+					sender.sendMessage(ChatColor.RED + "Failed to check updates for " + args[1] + "!" + (sender instanceof Player ? " Check console for details!" : ""));
+					e.printStackTrace();
+				} 
+				catch (IOException e)
+				{
+					sender.sendMessage(ChatColor.RED + "Failed to check updates for " + args[1] + "!" + (sender instanceof Player ? " Check console for details!" : ""));
+					e.printStackTrace();
+				}
+			}
         }.runTaskAsynchronously(pluginMngr);
 
         return true;
@@ -610,6 +649,7 @@ public class PMCommandExecutor implements CommandExecutor
     	else
     	{
     		if(args[1].equalsIgnoreCase("search"))plugGetSearchCmd(sender, args);
+    		else if(args[1].equalsIgnoreCase("check"))plugGetCheckCmd(sender, args);
             else
                 return msg(sender, ChatColor.GOLD + "Command unrecognized.  Type " + ChatColor.AQUA + "/plm plug-get" + ChatColor.GOLD + " for help");
     	}

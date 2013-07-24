@@ -12,7 +12,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bukkit.plugin.Plugin;
-import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
@@ -27,7 +26,7 @@ public class DBOUtilities
 	}
 
 	private static Pattern versionPattern   = Pattern.compile("^[^0-9]*(([0-9]+\\.)*[0-9]+).*$");
-	private static Pattern changelogPattern = Pattern.compile(".*?<p>(.*)</p>.*?", Pattern.DOTALL);
+	//private static Pattern changelogPattern = Pattern.compile(".*?<p>(.*)</p>.*?", Pattern.DOTALL);
 
 	/**
 	 * compare two version strings
@@ -127,6 +126,26 @@ public class DBOUtilities
 
 		return slugInfo;
 	}
+	
+	static VersionInformation getLatestVersion(String slug) throws MalformedURLException, IOException
+	{
+		URL url;
+		url = new URL("http://api.bukget.org/3/plugins/bukkit/" + slug + "?size=1");
+		HttpURLConnection huc = (HttpURLConnection) url.openConnection();
+		if(huc.getResponseCode() == 404)return null;
+		InputStreamReader reader = new InputStreamReader(huc.getInputStream());
+		JsonObject o = JsonObject.readFrom(reader);
+		JsonArray versions = (JsonArray) o.get("versions");
+		VersionInformation inf = new VersionInformation(null, null, null, null);
+		if(versions.size() == 0)return inf;
+		JsonObject v = versions.get(0).asObject();
+		inf.version = v.get("version").asString();
+		inf.type = v.get("type").asString();
+		inf.pluginname = o.get("plugin_name").asString();
+		inf.slug = slug;
+		reader.close();
+		return inf;
+	}
 
 	public static VersionInfo isUpToDate(Plugin plugin, String slug)
 	{
@@ -192,5 +211,19 @@ public class DBOUtilities
 			return VersionInfo.ERROR;
 		}
 	}
-
+	
+	static class VersionInformation
+	{
+		public String version;
+		public String pluginname;
+		public String slug;
+		public String type;
+		public VersionInformation(String version, String pluginname, String slug, String type)
+		{
+			this.version = version;
+			this.pluginname = pluginname;
+			this.slug = slug;
+			this.type = type;
+		}
+	}
 }
