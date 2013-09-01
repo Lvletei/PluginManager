@@ -255,6 +255,17 @@ public class PluginControl
 		}
 		return null;
 	}
+	
+	public void registerCommand(Plugin plugin, PluginCommand cmd)
+	{
+		registerCommand(plugin, cmd, true);
+	}
+	
+	public void registerCommand(Plugin plugin, PluginCommand cmd, boolean hasPriority)
+	{
+		if(hasPriority)kc.put(cmd.getName().toLowerCase(), cmd);
+		else scm.register(plugin.getName(), cmd);
+	}
 
 	public void registerCommands(Plugin p)
 	{
@@ -264,9 +275,7 @@ public class PluginControl
 		{
 			PluginCommand c = plugin.getCommand(entry.getKey());
 			if (c == null)
-			{
 				continue;
-			}
 			kc.put(c.getName().toLowerCase(), c);
 		}
 	}
