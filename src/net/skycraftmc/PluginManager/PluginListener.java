@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class PluginListener implements Listener
 {
@@ -35,8 +36,7 @@ public class PluginListener implements Listener
 
                     for (String s : cmds)
                     {
-                        System.out.println("P: " + p.getName() + " C: " + s);
-                        PluginCommand cmd = Bukkit.getPluginCommand(s);
+                        PluginCommand cmd = con.getCommand((JavaPlugin) p, s);
                         if (cmd != null)
                         {
                             con.changePriority(p, cmd, true);
@@ -45,7 +45,7 @@ public class PluginListener implements Listener
 
                 }
 
-            }, 20 * 10);
+            }, 1L);
         }
 
         // Plugin p = e.getPlugin();

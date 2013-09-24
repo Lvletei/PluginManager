@@ -51,6 +51,46 @@ public class PluginControl
         kc = (Map<String, Command>) kcF.get(scm);
     }
 
+    private void addToConfig(String pName, String cmdName)
+    {
+        if (!cmdConfig.contains(pName))
+        {
+            cmdConfig.set(pName, cmdName);
+        }
+        else
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (String s : cmdConfig.getStringList(pName, null))
+            {
+                if (s.equals(cmdName))
+                {
+                    return;
+                }
+                sb.append(s).append(',');
+            }
+            sb.append(cmdName);
+            cmdConfig.set(pName, sb.toString());
+        }
+
+        for (String key : cmdConfig.getKeySet())
+        {
+            if (key.equals(pName))
+            {
+                continue;
+            }
+
+            List<String> values = Arrays.asList(cmdConfig.getStringList(key, null));
+            for (String s : values.toArray(new String[0]))
+            {
+                if (cmdName.equalsIgnoreCase(s))
+                {
+                    values.remove(s);
+                }
+            }
+        }
+    }
+
     public boolean changeDataFolder(JavaPlugin plugin, String name)
     {
         Field f;
@@ -67,38 +107,6 @@ public class PluginControl
         }
 
         return true;
-    }
-
-    private void addToConfig(String pName, String cmdName)
-    {
-        if (!cmdConfig.contains(pName))
-            cmdConfig.set(pName, cmdName);
-        else
-        {
-            StringBuilder sb = new StringBuilder();
-
-            for (String s : cmdConfig.getStringList(pName, null))
-            {
-                if (s.equals(cmdName))
-                    return;
-                sb.append(s).append(',');
-            }
-            sb.append(cmdName);
-            cmdConfig.set(pName, sb.toString());
-        }
-
-        for (String key : cmdConfig.getKeySet())
-        {
-            if (key.equals(pName))
-                continue;
-
-            List<String> values = Arrays.asList(cmdConfig.getStringList(key, null));
-            for (String s : values.toArray(new String[0]))
-            {
-                if (cmdName.equalsIgnoreCase(s))
-                    values.remove(s);
-            }
-        }
     }
 
     public boolean changePriority(Plugin p, PluginCommand command, boolean pluginLoad)
@@ -119,7 +127,9 @@ public class PluginControl
                             ctemp);
                     kc.put(command.getName(), command);
                     if (!pluginLoad)
+                    {
                         addToConfig(p.getName(), command.getName());
+                    }
                 }
             }
         }
@@ -295,9 +305,13 @@ public class PluginControl
     public void registerCommand(Plugin plugin, PluginCommand cmd, boolean hasPriority)
     {
         if (hasPriority)
+        {
             kc.put(cmd.getName().toLowerCase(), cmd);
+        }
         else
+        {
             scm.register(plugin.getName(), cmd);
+        }
     }
 
     public void registerCommands(Plugin p)
@@ -308,7 +322,9 @@ public class PluginControl
         {
             PluginCommand c = plugin.getCommand(entry.getKey());
             if (c == null)
+            {
                 continue;
+            }
             kc.put(c.getName().toLowerCase(), c);
         }
     }
@@ -425,9 +441,13 @@ public class PluginControl
         {
             cmd.unregister(scm);
             if (kc.get(cmd.getName()) == cmd)
+            {
                 kc.remove(cmd.getName());
+            }
             else
+            {
                 kc.remove(plugin.getName() + ":" + cmd.getName());
+            }
         }
 
         return true;

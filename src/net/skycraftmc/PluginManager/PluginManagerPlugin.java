@@ -112,8 +112,7 @@ public class PluginManagerPlugin extends JavaPlugin
             {
                 for (String s : cmds)
                 {
-                    System.out.println("P: " + p.getName() + " C: " + s);
-                    PluginCommand cmd = Bukkit.getPluginCommand(s);
+                    PluginCommand cmd = control.getCommand((JavaPlugin) p, s);
                     if (cmd != null)
                     {
                         control.changePriority(p, cmd, true);
