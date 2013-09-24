@@ -72,9 +72,9 @@ public class PMCommandExecutor implements CommandExecutor
                                                     "pluginmanager.plugget.search") };
 
     private final CmdDesc[]     cmdhelp     = {
-            new CmdDesc("plm cmd unregister <plugin> <command>", "Unregisters a command",
+            new CmdDesc("plm cmd unregister <command> <plugin>", "Unregisters a command",
                     "pluginmanager.cmd.unregister"),
-            new CmdDesc("plm cmd priority <plugin> <command>",
+            new CmdDesc("plm cmd priority <command> <plugin>",
                     "Elevates command priority to highest", "pluginmanager.cmd.priority") };
 
     PMCommandExecutor(PluginManagerPlugin plugin, PluginControl control)
@@ -86,78 +86,86 @@ public class PMCommandExecutor implements CommandExecutor
 
     public boolean cmdCmd(CommandSender sender, String[] args)
     {
-        if (args.length == 1)
+        if (args.length < 2)
         {
             return helpCmd(sender, args, "Command Help", cmdhelp);
         }
         else if (args[1].equalsIgnoreCase("unregister"))
         {
             if (noPerm(sender, "pluginmanager.cmd.unregister"))
-                return true;
-
-            if (args.length != 4)
             {
-                sender.sendMessage(ChatColor.RED + "Usage: /plm cmd unregister <plugin> <command>");
                 return true;
             }
 
-            Plugin plugin = server.getPluginManager().getPlugin(args[2]);
+            if (args.length < 4)
+            {
+                sender.sendMessage(ChatColor.RED + "Usage: /plm cmd unregister <command> <plugin>");
+                return true;
+            }
+
+            String pName = StringUtils.getStringOfArray(args, 3);
+            Plugin plugin = server.getPluginManager().getPlugin(pName);
             if (plugin == null)
             {
-                sender.sendMessage(ChatColor.RED + "No such plugin: " + args[2]);
+                sender.sendMessage(ChatColor.RED + "No such plugin: " + pName);
                 return true;
             }
 
-            if (!control.hasCommand((JavaPlugin) plugin, args[3]))
+            if (!control.hasCommand((JavaPlugin) plugin, args[2]))
             {
                 sender.sendMessage(ChatColor.RED + plugin.getDescription().getName()
-                        + " doesn't have the command " + args[3] + "!");
+                        + " doesn't have the command " + args[2] + "!");
                 return true;
             }
-            control.unregisterCommand((JavaPlugin) plugin, args[3]);
-            sender.sendMessage(ChatColor.GREEN + args[3] + " unregistered!");
+            control.unregisterCommand((JavaPlugin) plugin, args[2]);
+            sender.sendMessage(ChatColor.GREEN + args[2] + " unregistered!");
 
         }
         else if (args[1].equalsIgnoreCase("priority"))
         {
             if (noPerm(sender, "pluginmanager.cmd.priority"))
-                return true;
-
-            if (args.length != 4)
             {
-                sender.sendMessage(ChatColor.RED + "Usage: /plm cmd priority <plugin> <command>");
                 return true;
             }
 
-            JavaPlugin plugin = (JavaPlugin) server.getPluginManager().getPlugin(args[2]);
+            if (args.length < 4)
+            {
+                sender.sendMessage(ChatColor.RED + "Usage: /plm cmd priority <command> <plugin>");
+                return true;
+            }
+
+            String pName = StringUtils.getStringOfArray(args, 3);
+            JavaPlugin plugin = (JavaPlugin) server.getPluginManager().getPlugin(pName);
             if (plugin == null)
             {
-                sender.sendMessage(ChatColor.RED + "No such plugin: " + args[2]);
+                sender.sendMessage(ChatColor.RED + "No such plugin: " + pName);
                 return true;
             }
 
-            if (!control.hasCommand(plugin, args[3]))
+            if (!control.hasCommand(plugin, args[2]))
             {
                 sender.sendMessage(ChatColor.RED + plugin.getDescription().getName()
-                        + " doesn't have the command " + args[3] + "!");
+                        + " doesn't have the command " + args[2] + "!");
                 return true;
             }
 
-            if (control.isTopPriority(plugin, args[3]))
+            if (control.isTopPriority(plugin, args[2]))
             {
-                sender.sendMessage(ChatColor.RED + args[3] + " command of "
+                sender.sendMessage(ChatColor.RED + args[2] + " command of "
                         + plugin.getDescription().getName() + " is already top priority!");
                 return true;
             }
 
-            PluginCommand pcmd = control.getCommand(plugin, args[3]);
+            PluginCommand pcmd = control.getCommand(plugin, args[2]);
             control.changePriority(plugin, pcmd, false);
             sender.sendMessage(ChatColor.RED + "Priority of " + plugin.getDescription().getName()
                     + "'s " + pcmd.getName() + " command set to highest!");
         }
         else
+        {
             return msg(sender, ChatColor.GOLD + "Command unrecognized.  Type " + ChatColor.AQUA
                     + "/plm cmd" + ChatColor.GOLD + " for help");
+        }
         return true;
     }
 
@@ -174,20 +182,25 @@ public class PMCommandExecutor implements CommandExecutor
             return true;
         }
 
-        if (args.length != 2)
+        if (args.length < 2)
+        {
             return usage(sender, "plm disable <plugin>");
+        }
 
-        Plugin plugin = server.getPluginManager().getPlugin(args[1]);
+        String pName = StringUtils.getStringOfArray(args, 1);
+        Plugin plugin = server.getPluginManager().getPlugin(pName);
         if (plugin == null)
-            sender.sendMessage(ChatColor.RED + "No such plugin: " + args[1]);
-
+        {
+            sender.sendMessage(ChatColor.RED + "No such plugin: " + pName);
+        }
         else if (!plugin.isEnabled())
-            sender.sendMessage(ChatColor.RED + args[1] + " is already disabled!");
-
+        {
+            sender.sendMessage(ChatColor.RED + pName + " is already disabled!");
+        }
         else
         {
             control.disablePlugin(plugin);
-            sender.sendMessage(ChatColor.GREEN + args[1] + " disabled!");
+            sender.sendMessage(ChatColor.GREEN + pName + " disabled!");
         }
         return true;
     }
@@ -199,20 +212,25 @@ public class PMCommandExecutor implements CommandExecutor
             noPerm(sender);
             return true;
         }
-        if (args.length != 2)
+        if (args.length < 2)
+        {
             return usage(sender, "plm enable <plugin>");
+        }
 
-        Plugin plugin = server.getPluginManager().getPlugin(args[1]);
+        String pName = StringUtils.getStringOfArray(args, 1);
+        Plugin plugin = server.getPluginManager().getPlugin(pName);
         if (plugin == null)
-            sender.sendMessage(ChatColor.RED + "No such plugin: " + args[1]);
-
+        {
+            sender.sendMessage(ChatColor.RED + "No such plugin: " + pName);
+        }
         else if (plugin.isEnabled())
-            sender.sendMessage(ChatColor.RED + args[1] + " is already enabled!");
-
+        {
+            sender.sendMessage(ChatColor.RED + pName + " is already enabled!");
+        }
         else
         {
             control.enablePlugin(plugin);
-            sender.sendMessage(ChatColor.GREEN + args[1] + " enabled!");
+            sender.sendMessage(ChatColor.GREEN + pName + " enabled!");
         }
         return true;
     }
@@ -241,17 +259,23 @@ public class PMCommandExecutor implements CommandExecutor
             if (c.getPerm() != null)
             {
                 if (!sender.hasPermission(c.getPerm()) && sender != server.getConsoleSender())
+                {
                     continue;
+                }
             }
 
             if (d.size() < 10)
             {
                 if (i >= (page - 1) * 10 && i <= (page - 1) * 10 + 9)
+                {
                     d.add((sender instanceof Player ? "/" : "") + c.asDef());
+                }
             }
 
             if (cmda > 10 && cmda % 10 == 1)
+            {
                 max++;
+            }
 
             cmda++;
         }
@@ -259,7 +283,9 @@ public class PMCommandExecutor implements CommandExecutor
         sender.sendMessage(ChatColor.GOLD + title + " Help (" + ChatColor.AQUA + page
                 + ChatColor.GOLD + "/" + ChatColor.AQUA + max + ChatColor.GOLD + ")");
         for (String s : d)
+        {
             sender.sendMessage(s);
+        }
 
         return true;
     }
@@ -281,16 +307,24 @@ public class PMCommandExecutor implements CommandExecutor
         {
             String s = args[i];
             if (s.equalsIgnoreCase("-v") || s.equalsIgnoreCase("-version"))
+            {
                 versions = true;
+            }
             else if (s.equalsIgnoreCase("-options") || s.equalsIgnoreCase("-o"))
+            {
                 options = true;
+            }
             else if (s.equalsIgnoreCase("-alphabetical") || s.equalsIgnoreCase("-a"))
+            {
                 alphabetical = true;
+            }
             else if (s.startsWith("-s:") || s.startsWith("-search:"))
             {
                 String[] t = s.split("[:]", 2);
                 if (t.length != 2)
+                {
                     continue;
+                }
                 search = t[1];
             }
         }
@@ -321,7 +355,9 @@ public class PMCommandExecutor implements CommandExecutor
             {
                 Plugin p = it.next();
                 if (!p.getName().contains(search))
+                {
                     it.remove();
+                }
             }
         }
 
@@ -329,35 +365,53 @@ public class PMCommandExecutor implements CommandExecutor
         {
             java.util.ArrayList<String> s = new java.util.ArrayList<String>();
             for (Plugin p : plugins)
+            {
                 s.add(p.getName());
+            }
             java.util.Collections.sort(s);
             plugins = new java.util.ArrayList<Plugin>();
             for (String a : s)
+            {
                 plugins.add(server.getPluginManager().getPlugin(a));
+            }
         }
 
         for (Plugin p : plugins)
         {
             String l = p.getName();
             if (versions)
+            {
                 l = l + " " + p.getDescription().getVersion();
+            }
             if (p.isEnabled())
             {
                 if (pes.isEmpty())
+                {
                     pes = l;
+                }
                 else
+                {
                     pes = pes + ", " + l;
+                }
             }
             else if (pds.isEmpty())
+            {
                 pds = l;
+            }
             else
+            {
                 pds = pds + ", " + l;
+            }
         }
 
         if (!pes.isEmpty())
+        {
             sender.sendMessage(ChatColor.YELLOW + "Enabled plugins: " + ChatColor.GREEN + pes);
+        }
         if (!pds.isEmpty())
+        {
             sender.sendMessage(ChatColor.YELLOW + "Disabled plugins: " + ChatColor.RED + pds);
+        }
         return true;
     }
 
@@ -369,15 +423,25 @@ public class PMCommandExecutor implements CommandExecutor
             return true;
         }
 
-        if (args.length <= 1)
+        if (args.length < 2)
+        {
             return usage(sender, "plm load <plugin>");
+        }
 
-        String fname = "";
-        for (int i = 1; i < args.length; i++)
-            if (fname.isEmpty())
-                fname = fname + args[i];
-            else
-                fname = fname + " " + args[i];
+        String fname = StringUtils.getStringOfArray(args, 1);
+        // not needed
+        // String fname = "";
+        // for (int i = 1; i < args.length; i++)
+        // {
+        // if (fname.isEmpty())
+        // {
+        // fname = fname + args[i];
+        // }
+        // else
+        // {
+        // fname = fname + " " + args[i];
+        // }
+        // }
 
         File f = new File("plugins" + File.separator + fname + ".jar");
         if (!f.exists())
@@ -408,12 +472,14 @@ public class PMCommandExecutor implements CommandExecutor
                     + p.getDescription().getVersion() + " loaded successfully!");
         }
         else
+        {
             sender.sendMessage(ChatColor.RED
                     + "Failed to load "
                     + args[1]
                     + "!"
                     + (sender instanceof org.bukkit.entity.Player ? "Check console for details!"
                             : ""));
+        }
 
         return true;
     }
@@ -445,32 +511,176 @@ public class PMCommandExecutor implements CommandExecutor
         if (args.length >= 1)
         {
             if (args[0].equalsIgnoreCase("list"))
+            {
                 return listCmd(sender, args);
+            }
             else if (args[0].equalsIgnoreCase("enable"))
+            {
                 return enableCmd(sender, args);
+            }
             else if (args[0].equalsIgnoreCase("disable"))
+            {
                 return disableCmd(sender, args);
+            }
             else if (args[0].equalsIgnoreCase("load"))
+            {
                 return loadCmd(sender, args);
+            }
             else if (args[0].equalsIgnoreCase("unload"))
+            {
                 return unloadCmd(sender, args);
+            }
             else if (args[0].equalsIgnoreCase("reload"))
+            {
                 return reloadCmd(sender, args);
+            }
             else if (args[0].equalsIgnoreCase("sreload") || args[0].equalsIgnoreCase("softreload"))
+            {
                 return sreloadCmd(sender, args);
+            }
             else if (args[0].equalsIgnoreCase("show"))
+            {
                 return showCmd(sender, args);
+            }
             else if (args[0].equalsIgnoreCase("cmd"))
+            {
                 return cmdCmd(sender, args);
+            }
             else if (args[0].equalsIgnoreCase("plug-get"))
+            {
                 return plugGetCmd(sender, args);
+            }
             else
+            {
                 return msg(sender, ChatColor.GOLD + "Command unrecognized.  Type " + ChatColor.AQUA
                         + "/plm" + ChatColor.GOLD + " for help");
+            }
 
         }
         else
+        {
             helpCmd(sender, args, "PluginManager", help);
+        }
+        return true;
+    }
+
+    private boolean plugGetCheckCmd(final CommandSender sender, final String[] args)
+    {
+        if (noPerm(sender, "pluginmanager.plugget.check"))
+        {
+            return true;
+        }
+
+        if (args.length < 3)
+        {
+            return usage(sender, "plm plug-get check <slug>");
+        }
+
+        new BukkitRunnable() {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    VersionInformation ver = DBOUtilities.getLatestVersion(args[2].toLowerCase());
+                    if (ver == null)
+                    {
+                        sender.sendMessage(ChatColor.RED + "\"" + args[2] + "\" does not exist!");
+                    }
+                    else if (ver.version == null)
+                    {
+                        sender.sendMessage(ChatColor.YELLOW
+                                + "No version of the plugin exists on BukkitDev yet.");
+                    }
+                    else
+                    {
+                        sender.sendMessage(ChatColor.GREEN + "The latest version of \"" + args[2]
+                                + "\" is " + ver.version + " (" + ver.type + ")");
+                    }
+                }
+                catch (MalformedURLException e)
+                {
+                    sender.sendMessage(ChatColor.RED + "Failed to check updates for " + args[2]
+                            + "!" + (sender instanceof Player ? " Check console for details!" : ""));
+                    e.printStackTrace();
+                }
+                catch (IOException e)
+                {
+                    sender.sendMessage(ChatColor.RED + "Failed to check updates for " + args[2]
+                            + "!" + (sender instanceof Player ? " Check console for details!" : ""));
+                    e.printStackTrace();
+                }
+            }
+        }.runTaskAsynchronously(pluginMngr);
+
+        return true;
+    }
+
+    private boolean plugGetCmd(CommandSender sender, String[] args)
+    {
+        if (args.length == 1)
+        {
+            return helpCmd(sender, args, "Updater Help", pluggethelp);
+        }
+        else
+        {
+            if (args[1].equalsIgnoreCase("search"))
+            {
+                plugGetSearchCmd(sender, args);
+            }
+            else if (args[1].equalsIgnoreCase("check"))
+            {
+                plugGetCheckCmd(sender, args);
+            }
+            else
+            {
+                return msg(sender, ChatColor.GOLD + "Command unrecognized.  Type " + ChatColor.AQUA
+                        + "/plm plug-get" + ChatColor.GOLD + " for help");
+            }
+        }
+        return true;
+    }
+
+    private boolean plugGetSearchCmd(final CommandSender sender, final String[] args)
+    {
+        if (noPerm(sender, "pluginmanager.plugget.search"))
+        {
+            return true;
+        }
+
+        if (args.length < 3)
+        {
+            return usage(sender, "plm plug-get search <slug>");
+        }
+
+        new BukkitRunnable() {
+
+            @Override
+            public void run()
+            {
+                List<SlugInformation> slugInfo = DBOUtilities.getSlugInformationList(args[2]);
+
+                if (slugInfo.size() == 0)
+                {
+                    sender.sendMessage(ChatColor.RED + "Nothing results found for " + args[2] + "!");
+                }
+                else
+                {
+                    sender.sendMessage(ChatColor.AQUA
+                            + String.format("|----BukkitDev Plugin Search: %s----|",
+                                    ChatColor.GREEN + args[2] + ChatColor.AQUA));
+                    sender.sendMessage(ChatColor.GOLD + "|----Plugin name: DBO Slug----|");
+
+                    for (SlugInformation si : slugInfo)
+                    {
+                        sender.sendMessage(ChatColor.GOLD
+                                + String.format("%1$s: %2$s", si.getPluginName(), si.getSlug()));
+                    }
+                }
+            }
+
+        }.runTaskAsynchronously(pluginMngr);
+
         return true;
     }
 
@@ -483,11 +693,16 @@ public class PMCommandExecutor implements CommandExecutor
         }
 
         if (args.length != 2)
+        {
             return usage(sender, "plm reload <plugin>");
+        }
 
-        Plugin plugin = server.getPluginManager().getPlugin(args[1]);
+        String pName = StringUtils.getStringOfArray(args, 1);
+        Plugin plugin = server.getPluginManager().getPlugin(pName);
         if (plugin == null)
-            sender.sendMessage(ChatColor.RED + "No such plugin: " + args[1]);
+        {
+            sender.sendMessage(ChatColor.RED + "No such plugin: " + pName);
+        }
         else
         {
             File file = control.getFile((JavaPlugin) plugin);
@@ -499,99 +714,29 @@ public class PMCommandExecutor implements CommandExecutor
             }
 
             String fname = file.getName().substring(0, file.getName().length() - 4);
-            boolean t = plugin == this;
+            // boolean t = plugin == this; I don't think that this is right
+            boolean t = plugin.equals(pluginMngr);
             pluginMngr.setUnload(t);
 
             if (!control.unloadPlugin(plugin))
-                sender.sendMessage(ChatColor.RED + "An error occurred while unloading " + args[1]
+            {
+                sender.sendMessage(ChatColor.RED + "An error occurred while unloading " + pName
                         + "!");
+            }
             else if ((loaded = (JavaPlugin) control.loadPlugin(fname)) == null)
+            {
                 sender.sendMessage(ChatColor.RED + "Failed to load " + fname + "!"
                         + (sender != server.getConsoleSender() ? "Check console for details!" : ""));
+            }
 
             server.getPluginManager().enablePlugin(loaded);
             sender.sendMessage(ChatColor.GREEN + loaded.getDescription().getName()
                     + " reloaded successfully.");
             if (t)
+            {
                 control.cleanup();
+            }
         }
-
-        return true;
-    }
-
-    private boolean plugGetSearchCmd(final CommandSender sender, final String[] args)
-    {
-        if (noPerm(sender, "pluginmanager.plugget.search"))
-            return true;
-
-        if (args.length != 3)
-            return usage(sender, "plm plug-get find <slug>");
-
-        new BukkitRunnable() {
-
-            public void run()
-            {
-                List<SlugInformation> slugInfo = DBOUtilities.getSlugInformationList(args[2]);
-
-                if (slugInfo.size() == 0)
-                    sender.sendMessage(ChatColor.RED + "Nothing results found for " + args[2] + "!");
-                else
-                {
-                    sender.sendMessage(ChatColor.AQUA
-                            + String.format("|----BukkitDev Plugin Search: %s----|",
-                                    ChatColor.GREEN + args[2] + ChatColor.AQUA));
-                    sender.sendMessage(ChatColor.GOLD + "|----Plugin name: DBO Slug----|");
-
-                    for (SlugInformation si : slugInfo)
-                        sender.sendMessage(ChatColor.GOLD
-                                + String.format("%1$s: %2$s", si.getPluginName(), si.getSlug()));
-                }
-            }
-
-        }.runTaskAsynchronously(pluginMngr);
-
-        return true;
-    }
-
-    private boolean plugGetCheckCmd(final CommandSender sender, final String[] args)
-    {
-        if (noPerm(sender, "pluginmanager.plugget.check"))
-            return true;
-
-        if (args.length != 3)
-            return usage(sender, "plm plug-get check <slug>");
-
-        new BukkitRunnable() {
-            public void run()
-            {
-                try
-                {
-                    VersionInformation ver = DBOUtilities.getLatestVersion(args[2].toLowerCase());
-                    if (ver == null)
-                        sender.sendMessage(ChatColor.RED + "\"" + args[2] + "\" does not exist!");
-                    else if (ver.version == null)
-                        sender.sendMessage(ChatColor.YELLOW
-                                + "No version of the plugin exists on BukkitDev yet.");
-                    else
-                    {
-                        sender.sendMessage(ChatColor.GREEN + "The latest version of \"" + args[2]
-                                + "\" is " + ver.version + " (" + ver.type + ")");
-                    }
-                }
-                catch (MalformedURLException e)
-                {
-                    sender.sendMessage(ChatColor.RED + "Failed to check updates for " + args[1]
-                            + "!" + (sender instanceof Player ? " Check console for details!" : ""));
-                    e.printStackTrace();
-                }
-                catch (IOException e)
-                {
-                    sender.sendMessage(ChatColor.RED + "Failed to check updates for " + args[1]
-                            + "!" + (sender instanceof Player ? " Check console for details!" : ""));
-                    e.printStackTrace();
-                }
-            }
-        }.runTaskAsynchronously(pluginMngr);
 
         return true;
     }
@@ -604,12 +749,17 @@ public class PMCommandExecutor implements CommandExecutor
             return true;
         }
 
-        if (args.length != 2)
+        if (args.length < 2)
+        {
             return usage(sender, "plm show <plugin>");
+        }
 
-        Plugin plugin = server.getPluginManager().getPlugin(args[1]);
+        String pName = StringUtils.getStringOfArray(args, 1);
+        Plugin plugin = server.getPluginManager().getPlugin(pName);
         if (plugin == null)
-            sender.sendMessage(ChatColor.RED + "No such plugin: " + args[1]);
+        {
+            sender.sendMessage(ChatColor.RED + "No such plugin: " + pName);
+        }
         else
         {
             File file = control.getFile((JavaPlugin) plugin);
@@ -620,8 +770,10 @@ public class PMCommandExecutor implements CommandExecutor
                     + (plugin.isEnabled() ? ChatColor.GREEN + "Enabled" : ChatColor.RED
                             + "Disabled"));
             if (plugin.getDescription().getDescription() != null)
+            {
                 sender.sendMessage(ChatColor.AQUA + "Description: " + ChatColor.GREEN
                         + plugin.getDescription().getDescription());
+            }
 
             sender.sendMessage(ChatColor.AQUA + "Version: " + ChatColor.GREEN
                     + plugin.getDescription().getVersion());
@@ -637,20 +789,26 @@ public class PMCommandExecutor implements CommandExecutor
                     for (String a : plugin.getDescription().getAuthors())
                     {
                         if (authors.length() > 0)
+                        {
                             authors.append(", ");
+                        }
                         authors.append(a);
                     }
                 }
             }
 
             if (authors != null)
+            {
                 sender.sendMessage(ChatColor.AQUA
                         + (plugin.getDescription().getAuthors().size() == 1 ? "Author: "
                                 : "Authors: ") + ChatColor.GREEN + authors);
+            }
 
             if (plugin.getDescription().getWebsite() != null)
+            {
                 sender.sendMessage(ChatColor.AQUA + "Website: " + ChatColor.GREEN
                         + plugin.getDescription().getWebsite());
+            }
         }
         return true;
     }
@@ -664,14 +822,21 @@ public class PMCommandExecutor implements CommandExecutor
             return true;
         }
 
-        if (args.length != 2)
+        if (args.length < 2)
+        {
             return usage(sender, "plm sreload <plugin>");
+        }
 
-        Plugin plugin = server.getPluginManager().getPlugin(args[1]);
+        String pName = StringUtils.getStringOfArray(args, 1);
+        Plugin plugin = server.getPluginManager().getPlugin(pName);
         if (plugin == null)
-            sender.sendMessage(ChatColor.RED + "No such plugin: " + args[1]);
+        {
+            sender.sendMessage(ChatColor.RED + "No such plugin: " + pName);
+        }
         else if (!plugin.isEnabled())
+        {
             sender.sendMessage(ChatColor.RED + "The plugin is disabled!");
+        }
         else
         {
             server.getPluginManager().disablePlugin(plugin);
@@ -691,28 +856,39 @@ public class PMCommandExecutor implements CommandExecutor
             return true;
         }
 
-        if (args.length != 2)
+        if (args.length < 2)
+        {
             return usage(sender, "plm unload <plugin>");
+        }
 
-        Plugin plugin = server.getPluginManager().getPlugin(args[1]);
+        String pName = StringUtils.getStringOfArray(args, 1);
+        Plugin plugin = server.getPluginManager().getPlugin(pName);
         if (plugin == null)
+        {
             sender.sendMessage(ChatColor.RED + "No such plugin: " + args[1]);
+        }
         else
         {
             boolean t = plugin == this;
             pluginMngr.setUnload(t);
             if (control.unloadPlugin(plugin))
-                sender.sendMessage(ChatColor.GREEN + args[1] + " "
+            {
+                sender.sendMessage(ChatColor.GREEN + pName + " "
                         + plugin.getDescription().getVersion() + " successfully unloaded!");
+            }
             else
+            {
                 sender.sendMessage(ChatColor.RED
                         + "Failed to unload "
-                        + args[1]
+                        + pName
                         + "!"
                         + (sender instanceof org.bukkit.entity.Player ? "Check console for details!"
                                 : ""));
+            }
             if (t)
+            {
                 control.cleanup();
+            }
         }
 
         return true;
@@ -722,23 +898,6 @@ public class PMCommandExecutor implements CommandExecutor
     {
         sender.sendMessage(ChatColor.RED + "Usage: " + (sender instanceof Player ? "/" : "")
                 + usage);
-        return true;
-    }
-
-    private boolean plugGetCmd(CommandSender sender, String[] args)
-    {
-        if (args.length == 1)
-            return helpCmd(sender, args, "Updater Help", pluggethelp);
-        else
-        {
-            if (args[1].equalsIgnoreCase("search"))
-                plugGetSearchCmd(sender, args);
-            else if (args[1].equalsIgnoreCase("check"))
-                plugGetCheckCmd(sender, args);
-            else
-                return msg(sender, ChatColor.GOLD + "Command unrecognized.  Type " + ChatColor.AQUA
-                        + "/plm plug-get" + ChatColor.GOLD + " for help");
-        }
         return true;
     }
 }

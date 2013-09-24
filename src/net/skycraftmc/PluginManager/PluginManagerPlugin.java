@@ -3,6 +3,9 @@ package net.skycraftmc.PluginManager;
 import java.io.File;
 import java.io.IOException;
 
+import org.bukkit.Bukkit;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class PluginManagerPlugin extends JavaPlugin
@@ -13,14 +16,14 @@ public class PluginManagerPlugin extends JavaPlugin
 
     private StringConfig  cmdConfig;
 
-    public PluginControl getPluginControl()
-    {
-        return control;
-    }
-
     StringConfig getCmdConfig()
     {
         return cmdConfig;
+    }
+
+    public PluginControl getPluginControl()
+    {
+        return control;
     }
 
     @Override
@@ -37,7 +40,9 @@ public class PluginManagerPlugin extends JavaPlugin
             e.printStackTrace();
         }
         if (!unl)
+        {
             control.cleanup();
+        }
     }
 
     @Override
@@ -71,14 +76,17 @@ public class PluginManagerPlugin extends JavaPlugin
         getCommand("pluginmanager").setExecutor(new PMCommandExecutor(this, control));
         getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
 
+            @Override
             public void run()
             {
                 try
                 {
                     UpdateInformation inf = Updater.findUpdate("pm-pluginmanager");
                     if (!getDescription().getVersion().equals(inf.getVersion()))
+                    {
                         getLogger().info(
                                 "A new version of PluginManager is available: " + inf.getVersion());
+                    }
                 }
                 catch (Exception e)
                 {
@@ -86,11 +94,33 @@ public class PluginManagerPlugin extends JavaPlugin
                 }
             }
         });
+        updateCommandPriorities();
         getServer().getPluginManager().registerEvents(new PluginListener(this), this);
     }
 
     void setUnload(boolean unl)
     {
         this.unl = unl;
+    }
+
+    private void updateCommandPriorities()
+    {
+        for (Plugin p : Bukkit.getPluginManager().getPlugins())
+        {
+            final String[] cmds = cmdConfig.getStringList(p.getName(), null);
+            if (cmds != null)
+            {
+                for (String s : cmds)
+                {
+                    System.out.println("P: " + p.getName() + " C: " + s);
+                    PluginCommand cmd = Bukkit.getPluginCommand(s);
+                    if (cmd != null)
+                    {
+                        control.changePriority(p, cmd, true);
+                    }
+                }
+            }
+
+        }
     }
 }

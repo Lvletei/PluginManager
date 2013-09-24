@@ -9,26 +9,53 @@ import org.bukkit.plugin.Plugin;
 
 public class PluginListener implements Listener
 {
-    StringConfig  cmdConfig;
-    PluginControl con;
+    StringConfig        cmdConfig;
+    PluginControl       con;
+    PluginManagerPlugin pmp;
 
     PluginListener(PluginManagerPlugin pmp)
     {
+        this.pmp = pmp;
         this.cmdConfig = pmp.getCmdConfig();
         this.con = pmp.getPluginControl();
     }
 
     @EventHandler()
-    public void onEnablePlugin(PluginEnableEvent e)
+    public void onEnablePlugin(final PluginEnableEvent e)
     {
-        Plugin p = e.getPlugin();
-        String[] cmds = cmdConfig.getStringList(p.getName(), null);
+        final Plugin p = e.getPlugin();
+        final String[] cmds = cmdConfig.getStringList(p.getName(), null);
         if (cmds != null)
-            for (String s : cmds)
-            {
-                PluginCommand cmd = Bukkit.getPluginCommand(s);
-                if (cmd != null)
-                    con.changePriority(p, cmd, true);
-            }
+        {
+            Bukkit.getScheduler().scheduleSyncDelayedTask(pmp, new Runnable() {
+
+                @Override
+                public void run()
+                {
+
+                    for (String s : cmds)
+                    {
+                        System.out.println("P: " + p.getName() + " C: " + s);
+                        PluginCommand cmd = Bukkit.getPluginCommand(s);
+                        if (cmd != null)
+                        {
+                            con.changePriority(p, cmd, true);
+                        }
+                    }
+
+                }
+
+            }, 20 * 10);
+        }
+
+        // Plugin p = e.getPlugin();
+        // String[] cmds = cmdConfig.getStringList(p.getName(), null);
+        // if (cmds != null)
+        // for (String s : cmds)
+        // {
+        // PluginCommand cmd = Bukkit.getPluginCommand(s);
+        // if (cmd != null)
+        // con.changePriority(p, cmd, true);
+        // }
     }
 }
