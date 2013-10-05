@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.skycraftmc.PluginManager.DBOUtilities.VersionInfo;
 import net.skycraftmc.PluginManager.DBOUtilities.VersionInformation;
 
 import org.bukkit.Bukkit;
@@ -594,9 +595,42 @@ public class PMCommandExecutor implements CommandExecutor
                     }
                     else
                     {
-                        sender.sendMessage(ChatColor.GREEN + "The latest version of \"" + args[2]
-                                + "\" is " + ver.version + " (" + ver.type + ")");
+                        VersionInfo info = DBOUtilities.isUpToDate(Bukkit.getPluginManager()
+                                .getPlugin(ver.pluginname), args[2]);
+                        switch (info)
+                        {
+                            case LATEST:
+                            {
+                                sender.sendMessage(ChatColor.GREEN
+                                        + "You are using the newest version of '" + ver.pluginname
+                                        + "'.");
+                                break;
+                            }
+                            case OLD:
+                            {
+                                sender.sendMessage(ChatColor.RED + "There is a newer version of '"
+                                        + ver.pluginname + "' available. (" + ver.version + ")");
+                                break;
+                            }
+                            case NOT_IN_USE:
+                            {
+                                sender.sendMessage(ChatColor.RED + "You are not using '"
+                                        + ver.pluginname + "' on your server!");
+                                break;
+                            }
+                            default:
+                            {
+                                sender.sendMessage(ChatColor.RED
+                                        + "Failed to check updates for "
+                                        + args[2]
+                                        + "!"
+                                        + (sender instanceof Player ? " Check console for details!"
+                                                : ""));
+                                break;
+                            }
+                        }
                     }
+
                 }
                 catch (MalformedURLException e)
                 {
