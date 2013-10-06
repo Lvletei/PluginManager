@@ -22,7 +22,7 @@ public class DBOUtilities
 
     public enum VersionInfo
     {
-        LATEST, OLD, ERROR, UNKNOWN, NONEXISTANT
+        LATEST, OLD, NOT_IN_USE, ERROR, UNKNOWN, NONEXISTANT
     }
 
     static class VersionInformation
@@ -227,7 +227,7 @@ public class DBOUtilities
         {
             if (plugin == null)
             {
-                return VersionInfo.ERROR;
+                return VersionInfo.NOT_IN_USE;
             }
 
             String pluginVersion = plugin.getDescription().getVersion();

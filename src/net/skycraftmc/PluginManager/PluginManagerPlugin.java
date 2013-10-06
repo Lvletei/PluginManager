@@ -3,6 +3,8 @@ package net.skycraftmc.PluginManager;
 import java.io.File;
 import java.io.IOException;
 
+import net.skycraftmc.PluginManager.DBOUtilities.VersionInfo;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
@@ -74,6 +76,7 @@ public class PluginManagerPlugin extends JavaPlugin
         }
 
         getCommand("pluginmanager").setExecutor(new PMCommandExecutor(this, control));
+        final Plugin pm = this;
         getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
 
             @Override
@@ -81,11 +84,12 @@ public class PluginManagerPlugin extends JavaPlugin
             {
                 try
                 {
-                    UpdateInformation inf = Updater.findUpdate("pm-pluginmanager");
-                    if (!getDescription().getVersion().equals(inf.getVersion()))
+                    VersionInfo info = DBOUtilities.isUpToDate(pm, "pm-pluginmanager");
+                    if (info.compareTo(VersionInfo.OLD) == 0)
                     {
-                        getLogger().info(
-                                "A new version of PluginManager is available: " + inf.getVersion());
+                        getLogger()
+                                .info("A new version of PluginManager is available: "
+                                        + DBOUtilities.getLatestVersion("pm-pluginmanager").version);
                     }
                 }
                 catch (Exception e)
