@@ -156,7 +156,7 @@ public class PMCommandExecutor implements CommandExecutor
 
             PluginCommand pcmd = control.getCommand(plugin, args[2]);
             control.changePriority(plugin, pcmd, false);
-            sender.sendMessage(ChatColor.RED + "Priority of " + plugin.getDescription().getName()
+            sender.sendMessage(ChatColor.GREEN + "Priority of " + plugin.getDescription().getName()
                     + "'s " + pcmd.getName() + " command set to highest!");
         }
         else
