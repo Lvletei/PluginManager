@@ -599,30 +599,30 @@ public class PMCommandExecutor implements CommandExecutor
                             case LATEST:
                             {
                                 sender.sendMessage(ChatColor.GREEN
-                                        + "You are using the newest version of '" + ver.pluginname
-                                        + "'.");
+                                        + "You are using the latest version of '" + ver.pluginname + "'.");
                                 break;
                             }
                             case OLD:
                             {
-                                sender.sendMessage(ChatColor.RED + "There is a newer version of '"
-                                        + ver.pluginname + "' available. (" + ver.version + ")");
+                                sender.sendMessage(ChatColor.GREEN + "There is a newer version of '"
+                                        + ver.pluginname + "' available: " + ver.version + "");
                                 break;
                             }
                             case NOT_IN_USE:
                             {
-                                sender.sendMessage(ChatColor.RED + "You are not using '"
-                                        + ver.pluginname + "' on your server!");
+                                sender.sendMessage(ChatColor.RED + "You are not using '" + ver.pluginname + "' on your server!");
                                 break;
+                            }
+                            case UNKNOWN:
+                            {
+                            	sender.sendMessage(ChatColor.RED + "The version of '" + ver.pluginname + "' is"
+                            			+ " abnormal; please check the version manually on BukkitDev.");
+                            	break;
                             }
                             default:
                             {
-                                sender.sendMessage(ChatColor.RED
-                                        + "Failed to check updates for "
-                                        + args[2]
-                                        + "!"
-                                        + (sender instanceof Player ? " Check console for details!"
-                                                : ""));
+                                sender.sendMessage(ChatColor.RED + "Failed to check for updates for " + args[2] + "!"
+                                        + (sender instanceof Player ? " Check console for details!" : ""));
                                 break;
                             }
                         }
@@ -631,13 +631,13 @@ public class PMCommandExecutor implements CommandExecutor
                 }
                 catch (MalformedURLException e)
                 {
-                    sender.sendMessage(ChatColor.RED + "Failed to check updates for " + args[2]
+                    sender.sendMessage(ChatColor.RED + "Failed to check for updates for " + args[2]
                             + "!" + (sender instanceof Player ? " Check console for details!" : ""));
                     e.printStackTrace();
                 }
                 catch (IOException e)
                 {
-                    sender.sendMessage(ChatColor.RED + "Failed to check updates for " + args[2]
+                    sender.sendMessage(ChatColor.RED + "Failed to check for updates for " + args[2]
                             + "!" + (sender instanceof Player ? " Check console for details!" : ""));
                     e.printStackTrace();
                 }
