@@ -33,7 +33,6 @@ public class PluginListener implements Listener
                 @Override
                 public void run()
                 {
-
                     for (String s : cmds)
                     {
                         PluginCommand cmd = con.getCommand((JavaPlugin) p, s);
@@ -42,20 +41,9 @@ public class PluginListener implements Listener
                             con.changePriority(p, cmd, true);
                         }
                     }
-
                 }
 
             }, 1L);
         }
-
-        // Plugin p = e.getPlugin();
-        // String[] cmds = cmdConfig.getStringList(p.getName(), null);
-        // if (cmds != null)
-        // for (String s : cmds)
-        // {
-        // PluginCommand cmd = Bukkit.getPluginCommand(s);
-        // if (cmd != null)
-        // con.changePriority(p, cmd, true);
-        // }
     }
 }

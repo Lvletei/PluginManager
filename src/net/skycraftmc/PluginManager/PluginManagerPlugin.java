@@ -85,7 +85,7 @@ public class PluginManagerPlugin extends JavaPlugin
                 try
                 {
                     VersionInfo info = DBOUtilities.isUpToDate(pm, "pm-pluginmanager");
-                    if (info.compareTo(VersionInfo.OLD) == 0)
+                    if (info == VersionInfo.OLD)
                     {
                         getLogger()
                                 .info("A new version of PluginManager is available: "

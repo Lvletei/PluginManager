@@ -17,6 +17,6 @@ public class StringUtils
             sb.append(array[i]);
             sb.append(" ");
         }
-        return sb.substring(0, sb.length() - 1);
+        return sb.toString();
     }
 }

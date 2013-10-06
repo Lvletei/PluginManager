@@ -61,7 +61,8 @@ public class PMCommandExecutor implements CommandExecutor
             new CmdDesc("plm sreload <plugin>", "Disables and enables a plugin", "pluginmanager.softreload"),
             new CmdDesc("plm show <plugin>", "Shows detailed information about a plugin", "pluginmanager.show"),
             new CmdDesc("plm list [options]", "Lists plugins with specified options", "pluginmanager.list"),
-            new CmdDesc("plm cmd", "Shows command manipulation menu", null)
+            new CmdDesc("plm cmd", "Shows command manipulation menu", null),
+            new CmdDesc("plm plug-get", "Shows BukkitDev lookup menu", null)
     };
 
     private final CmdDesc[]     pluggethelp = { 
