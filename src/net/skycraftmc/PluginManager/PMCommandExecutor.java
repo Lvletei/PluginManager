@@ -54,28 +54,24 @@ public class PMCommandExecutor implements CommandExecutor
     private final CmdDesc[]     help        = {
             new CmdDesc("plm enable <plugin>", "Enables a plugin", "pluginmanager.enable"),
             new CmdDesc("plm disable <plugin>", "Disables a plugin", "pluginmanager.disable"),
-            new CmdDesc("plm load <plugin>",
-                    "Loads a plugin(Must use a file name, no .jar needed)", "pluginmanager.load"),
+            new CmdDesc("plm load <plugin>", "Loads a plugin(Must use a file name, no .jar needed)", "pluginmanager.load"),
             new CmdDesc("plm unload <plugin>", "Unloads a plugin", "pluginmanager.unload"),
             new CmdDesc("plm reload <plugin>", "Unloads and loads a plugin", "pluginmanager.reload"),
-            new CmdDesc("plm sreload <plugin>", "Disables and enables a plugin",
-                    "pluginmanager.softreload"),
-            new CmdDesc("plm show <plugin>", "Shows detailed information about a plugin",
-                    "pluginmanager.show"),
-            new CmdDesc("plm list [options]",
-                    "Lists plugins with specified options, use -option to show options",
-                    "pluginmanager.list"),
-            new CmdDesc("plm cmd", "Shows command manipulation menu", null) };
+            new CmdDesc("plm sreload <plugin>", "Disables and enables a plugin", "pluginmanager.softreload"),
+            new CmdDesc("plm show <plugin>", "Shows detailed information about a plugin", "pluginmanager.show"),
+            new CmdDesc("plm list [options]", "Lists plugins with specified options", "pluginmanager.list"),
+            new CmdDesc("plm cmd", "Shows command manipulation menu", null)
+    };
 
-    private final CmdDesc[]     pluggethelp = { new CmdDesc("plm plug-get search <name>",
-                                                    "Searches for a plugin on BukkitDev",
-                                                    "pluginmanager.plugget.search") };
+    private final CmdDesc[]     pluggethelp = { 
+    		new CmdDesc("plm plug-get search <name>", "Searches for a plugin on BukkitDev", "pluginmanager.plugget.search"),
+    		new CmdDesc("plm plug-get check <slug>", "Checks if an update is available", "pluginmanager.plugget.check")
+    };
 
     private final CmdDesc[]     cmdhelp     = {
-            new CmdDesc("plm cmd unregister <command> <plugin>", "Unregisters a command",
-                    "pluginmanager.cmd.unregister"),
-            new CmdDesc("plm cmd priority <command> <plugin>",
-                    "Elevates command priority to highest", "pluginmanager.cmd.priority") };
+            new CmdDesc("plm cmd unregister <command> <plugin>", "Unregisters a command", "pluginmanager.cmd.unregister"),
+            new CmdDesc("plm cmd priority <command> <plugin>", "Elevates command priority to highest", "pluginmanager.cmd.priority")
+    };
 
     PMCommandExecutor(PluginManagerPlugin plugin, PluginControl control)
     {
