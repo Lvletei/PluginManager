@@ -23,12 +23,19 @@ permissions:
             pluginmanager.show: true
             pluginmanager.softreload: true
             pluginmanager.cmd.*: true
+            pluginmanager.plugget.*: true
     pluginmanager.cmd.*:
         default: false
         description: Gives all PluginManager cmd permissions
         children:
             pluginmanager.cmd.unregister: true
             pluginmanager.cmd.priority: true
+    pluginmanager.plugget.*:
+        default: false
+        description: Gives all PluginManager plug-get permissions
+        children:
+            pluginmanager.plugget.search: true
+            pluginmanager.plugget.check: true
     pluginmanager.list:
         default: false
     pluginmanager.enable:
@@ -48,4 +55,8 @@ permissions:
     pluginmanager.cmd.unregister:
         default: false
     pluginmanager.cmd.priority:
+        default: false
+    pluginmanager.plugget.search:
+        default: false
+    pluginmanager.plugget.check:
         default: false
