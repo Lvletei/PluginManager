@@ -3,6 +3,7 @@ version: 1.1
 author: Technius
 website: skycraftmc.net
 description: A plugin used for managing plugins
+load-before: [PerWorldPlugins]
 main: net.skycraftmc.PluginManager.PluginManagerPlugin
 commands:
     pluginmanager:
