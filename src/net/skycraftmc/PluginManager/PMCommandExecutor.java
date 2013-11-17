@@ -709,7 +709,7 @@ public class PMCommandExecutor implements CommandExecutor
             return true;
         }
 
-        if (args.length != 2)
+        if (args.length < 2)
         {
             return usage(sender, "plm reload <plugin>");
         }
