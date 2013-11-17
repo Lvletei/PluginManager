@@ -12,10 +12,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bukkit.plugin.Plugin;
-
-import com.eclipsesource.json.JsonArray;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonValue;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 public class DBOUtilities
 {
@@ -132,17 +131,17 @@ public class DBOUtilities
             return null;
         }
         InputStreamReader reader = new InputStreamReader(huc.getInputStream());
-        JsonObject o = JsonObject.readFrom(reader);
-        JsonArray versions = (JsonArray) o.get("versions");
+        JSONObject o = (JSONObject) JSONValue.parse(reader);
+        JSONArray versions = (JSONArray) o.get("versions");
         VersionInformation inf = new VersionInformation(null, null, null, null);
         if (versions.size() == 0)
         {
             return inf;
         }
-        JsonObject v = versions.get(0).asObject();
-        inf.version = v.get("version").asString();
-        inf.type = v.get("type").asString();
-        inf.pluginname = o.get("plugin_name").asString();
+        JSONObject v = (JSONObject) versions.get(0);
+        inf.version = (String) v.get("version");
+        inf.type = (String) v.get("type");
+        inf.pluginname = (String) o.get("plugin_name");
         inf.slug = slug;
         reader.close();
         return inf;
@@ -171,14 +170,14 @@ public class DBOUtilities
 
         try
         {
-            JsonArray slugArray = JsonArray.readFrom(new InputStreamReader(url.openStream()));
-            for (JsonValue value : slugArray.values())
+            JSONArray slugArray = (JSONArray) JSONValue.parse(new InputStreamReader(url.openStream()));
+            for (Object value : slugArray.toArray())
             {
-                if (value.isObject())
+                if (value instanceof JSONObject)
                 {
-                    JsonObject object = value.asObject();
-                    String slug = object.get("slug").asString();
-                    String pluginName = object.get("plugin_name").asString();
+                    JSONObject object = (JSONObject) value;
+                    String slug = (String) object.get("slug");
+                    String pluginName = (String) object.get("plugin_name");
                     slugInfo.add(new SlugInformation(slug, pluginName));
                 }
             }
@@ -206,13 +205,13 @@ public class DBOUtilities
                 return VersionInfo.NONEXISTANT;
             }
             InputStreamReader reader = new InputStreamReader(huc.getInputStream());
-            JsonObject o = JsonObject.readFrom(reader);
-            JsonArray versions = (JsonArray) o.get("versions");
+            JSONObject o = (JSONObject) JSONValue.parse(reader);
+            JSONArray versions = (JSONArray) o.get("versions");
             if (versions.size() == 0)
             {
                 return VersionInfo.LATEST;
             }
-            dbolatest = versions.get(0).asObject().get("version").asString();
+            dbolatest = (String) ((JSONObject)versions.get(0)).get("version");
             reader.close();
         }
         catch (MalformedURLException e1)

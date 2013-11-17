@@ -427,20 +427,6 @@ public class PMCommandExecutor implements CommandExecutor
         }
 
         String fname = StringUtils.getStringOfArray(args, 1);
-        // not needed
-        // String fname = "";
-        // for (int i = 1; i < args.length; i++)
-        // {
-        // if (fname.isEmpty())
-        // {
-        // fname = fname + args[i];
-        // }
-        // else
-        // {
-        // fname = fname + " " + args[i];
-        // }
-        // }
-
         File f = new File("plugins" + File.separator + fname + ".jar");
         if (!f.exists())
         {
