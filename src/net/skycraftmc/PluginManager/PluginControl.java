@@ -19,6 +19,7 @@ import org.bukkit.plugin.InvalidDescriptionException;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -36,17 +37,25 @@ public class PluginControl
 	@SuppressWarnings("unchecked")
 	public PluginControl(StringConfig cmdConfig) throws SecurityException,
 			NoSuchFieldException, IllegalArgumentException,
-			IllegalAccessException
+			IllegalAccessException, PMStartupException
 	{
 		this.cmdConfig = cmdConfig;
-		SimplePluginManager spm = (SimplePluginManager) Bukkit.getServer()
-				.getPluginManager();
-
+		PluginManager bpm = Bukkit.getServer().getPluginManager();
+		
+		if(!(bpm instanceof SimplePluginManager))
+			throw new PMStartupException("Unknown Bukkit plugin system detected: " 
+				+ bpm.getClass().getName());
+		
+		SimplePluginManager spm = (SimplePluginManager) bpm;
 		Field scmF;
-		scmF = spm.getClass().getDeclaredField("commandMap");
+		scmF = SimplePluginManager.class.getDeclaredField("commandMap");
 		scmF.setAccessible(true);
 		scm = (SimpleCommandMap) scmF.get(spm);
-
+		
+		if(!(scm instanceof SimpleCommandMap))
+			throw new PMStartupException("Unsupported Bukkit command system detected: "
+				+ scm.getClass().getName());
+		
 		Field kcF;
 		kcF = scm.getClass().getDeclaredField("knownCommands");
 		kcF.setAccessible(true);
@@ -459,7 +468,7 @@ public class PluginControl
 				kc.remove(plugin.getName() + ":" + cmd.getName());
 			for (String s : cmd.getAliases())
 			{
-				if(kc.get(s) == cmd)
+				if (kc.get(s) == cmd)
 					kc.remove(s);
 				else
 					kc.remove(plugin.getName() + ":" + s);
@@ -467,5 +476,14 @@ public class PluginControl
 		}
 
 		return true;
+	}
+
+	@SuppressWarnings("serial")
+	static class PMStartupException extends Exception
+	{
+		public PMStartupException(String string)
+		{
+			super(string);
+		}
 	}
 }
