@@ -2,6 +2,7 @@ package net.skycraftmc.PluginManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 
 import net.skycraftmc.PluginManager.DBOUtilities.VersionInfo;
 
@@ -41,7 +42,7 @@ public class PluginManagerPlugin extends JavaPlugin
             getLogger().severe("Failed to save config!");
             e.printStackTrace();
         }
-        if (!unl)
+        if (!unl && control != null)
         {
             control.cleanup();
         }
@@ -50,6 +51,17 @@ public class PluginManagerPlugin extends JavaPlugin
     @Override
     public void onEnable()
     {
+        try
+        {
+            control = new PluginControl(cmdConfig);
+        }
+        catch (Exception e)
+        {
+        	getLogger().log(Level.SEVERE, "Failed to start", e);
+            setEnabled(false);
+            return;
+        }
+        
         cmdConfig = new StringConfig(
                 new File(getDataFolder() + File.separator + "commands.cfg").getAbsolutePath());
         try
@@ -63,22 +75,9 @@ public class PluginManagerPlugin extends JavaPlugin
             e1.printStackTrace();
         }
 
-        try
-        {
-            control = new PluginControl(cmdConfig);
-        }
-        catch (Exception e)
-        {
-            getLogger().severe("Failed to start!");
-            setEnabled(false);
-            e.printStackTrace();
-            return;
-        }
-
         getCommand("pluginmanager").setExecutor(new PMCommandExecutor(this, control));
         final Plugin pm = this;
         getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
-
             @Override
             public void run()
             {
@@ -124,6 +123,6 @@ public class PluginManagerPlugin extends JavaPlugin
                 }
             }
 
-        }
-    }
+		}
+	}
 }
