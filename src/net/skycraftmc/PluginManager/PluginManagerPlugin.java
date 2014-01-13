@@ -93,7 +93,7 @@ public class PluginManagerPlugin extends JavaPlugin
                 }
                 catch (Exception e)
                 {
-                    getLogger().warning("Could not find update: " + e.getMessage());
+                    getLogger().log(Level.WARNING, "Could not find update", e);
                 }
             }
         });

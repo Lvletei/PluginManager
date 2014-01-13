@@ -6,10 +6,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.bukkit.plugin.Plugin;
 import org.json.simple.JSONArray;
@@ -39,109 +36,35 @@ public class DBOUtilities
             this.type = type;
         }
     }
-
-    private static Pattern versionPattern = Pattern.compile("^[^0-9]*(([0-9]+\\.)*[0-9]+).*$");
-
-    // private static Pattern changelogPattern =
-    // Pattern.compile(".*?<p>(.*)</p>.*?", Pattern.DOTALL);
-
-    /**
-     * compare two version strings
-     * 
-     * @param v1
-     *            first version string
-     * @param v2
-     *            the version string to compare
-     * @return 0 if both are same, 1 if v1 > v2 or -1 if v2 > v1
-     */
-    private static int compareVersions(String v1, String v2)
+    
+    public static int compareVersions(String v1, String v2)
     {
-        v1 = v1.replaceAll("\\s", "");
-        v2 = v2.replaceAll("\\s", "");
-        String[] a1 = v1.split("\\.");
-        String[] a2 = v2.split("\\.");
-        List<String> l1 = Arrays.asList(a1);
-        List<String> l2 = Arrays.asList(a2);
-
-        int i = 0;
-        while (true)
-        {
-            Double d1 = null;
-            Double d2 = null;
-
-            try
-            {
-                d1 = Double.parseDouble(l1.get(i));
-            }
-            catch (IndexOutOfBoundsException e)
-            {
-            }
-
-            try
-            {
-                d2 = Double.parseDouble(l2.get(i));
-            }
-            catch (IndexOutOfBoundsException e)
-            {
-            }
-
-            if (d1 != null && d2 != null)
-            {
-                if (d1.doubleValue() > d2.doubleValue())
-                {
-                    return 1;
-                }
-                else if (d1.doubleValue() < d2.doubleValue())
-                {
-                    return -1;
-                }
-            }
-            else if (d2 == null && d1 != null)
-            {
-                if (d1.doubleValue() > 0)
-                {
-                    return 1;
-                }
-            }
-            else if (d1 == null && d2 != null)
-            {
-                if (d2.doubleValue() > 0)
-                {
-                    return -1;
-                }
-            }
-            else
-            {
-                break;
-            }
-            i++;
-        }
-        return 0;
+    	for(VersionComparator c: VersionComparator.MATCHERS)
+    	{
+    		int code = c.compare(v1, v2);
+    		System.out.println("code: " + code);
+    		if(code != -1)return code;
+    	}
+    	return -1;
     }
 
     public static VersionInformation getLatestVersion(String slug) throws MalformedURLException,
             IOException
     {
-        URL url;
-        url = new URL("http://api.bukget.org/3/plugins/bukkit/" + slug.replace(" ", "%20")
-                + "?size=1");
-        HttpURLConnection huc = (HttpURLConnection) url.openConnection();
-        if (huc.getResponseCode() == 404)
-        {
-            return null;
-        }
+    	JSONObject po = getProjectObject(slugSearch(slug), slug);
+    	int id = getId(po);
+    	if(id == -1)return null;
+        URL url = new URL("https://api.curseforge.com/servermods/files?projectIds=" + id);
+        HttpURLConnection huc = openConnection(url);
         InputStreamReader reader = new InputStreamReader(huc.getInputStream());
-        JSONObject o = (JSONObject) JSONValue.parse(reader);
-        JSONArray versions = (JSONArray) o.get("versions");
-        VersionInformation inf = new VersionInformation(null, null, null, null);
-        if (versions.size() == 0)
-        {
+        JSONArray files = (JSONArray) JSONValue.parse(reader);
+        VersionInformation inf = new VersionInformation(null, (String) po.get("name"),
+        	null, null);
+        if(files.size() == 0)
             return inf;
-        }
-        JSONObject v = (JSONObject) versions.get(0);
-        inf.version = (String) v.get("version");
-        inf.type = (String) v.get("type");
-        inf.pluginname = (String) o.get("plugin_name");
+        JSONObject v = (JSONObject) files.get(files.size() - 1);
+        inf.version = (String) v.get("name");
+        inf.type = (String) v.get("releaseType");
         inf.slug = slug;
         reader.close();
         return inf;
@@ -161,7 +84,7 @@ public class DBOUtilities
         URL url = null;
         try
         {
-            url = new URL("http://api.bukget.org/3/search/plugin_name/like/" + name.toLowerCase());
+            url = new URL("https://api.curseforge.com/servermods/projects?search=" + name.toLowerCase());
         }
         catch (MalformedURLException e)
         {
@@ -170,106 +93,62 @@ public class DBOUtilities
 
         try
         {
-            JSONArray slugArray = (JSONArray) JSONValue.parse(new InputStreamReader(url.openStream()));
+        	HttpURLConnection huc = openConnection(url);
+            JSONArray slugArray = (JSONArray) JSONValue.parse(new InputStreamReader(huc.getInputStream()));
             for (Object value : slugArray.toArray())
             {
                 if (value instanceof JSONObject)
                 {
                     JSONObject object = (JSONObject) value;
                     String slug = (String) object.get("slug");
-                    String pluginName = (String) object.get("plugin_name");
+                    String pluginName = (String) object.get("name");
                     slugInfo.add(new SlugInformation(slug, pluginName));
                 }
             }
         }
         catch (IOException e)
         {
-            // BukGet unavailable
+            // ServerModsAPI unavailable
             return null;
         }
 
         return slugInfo;
     }
-
+    
     public static VersionInfo isUpToDate(Plugin plugin, String slug)
     {
-        String dbolatest;
-        URL url;
+    	try
+		{
+			return isUpToDate(plugin, getLatestVersion(slug));
+		}
+		catch (MalformedURLException e)
+		{
+			e.printStackTrace();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+    	return VersionInfo.ERROR;
+    }
+
+    public static VersionInfo isUpToDate(Plugin plugin, VersionInformation info)
+    {
+        if(plugin == null)
+        	return VersionInfo.NOT_IN_USE;
+        if(info.version == null)
+        	return VersionInfo.NONEXISTANT;
         try
         {
-
-            url = new URL("http://api.bukget.org/3/plugins/bukkit/" + slug + "?size=1");
-            HttpURLConnection huc = (HttpURLConnection) url.openConnection();
-            if (huc.getResponseCode() == 404)
-            {
-                return VersionInfo.NONEXISTANT;
-            }
-            InputStreamReader reader = new InputStreamReader(huc.getInputStream());
-            JSONObject o = (JSONObject) JSONValue.parse(reader);
-            JSONArray versions = (JSONArray) o.get("versions");
-            if (versions.size() == 0)
-            {
-                return VersionInfo.LATEST;
-            }
-            dbolatest = (String) ((JSONObject)versions.get(0)).get("version");
-            reader.close();
-        }
-        catch (MalformedURLException e1)
-        {
-            return VersionInfo.ERROR;
-        }
-        catch (IOException e)
-        {
-            return VersionInfo.ERROR;
-        }
-        try
-        {
-            if (plugin == null)
-            {
-                return VersionInfo.NOT_IN_USE;
-            }
-
             String pluginVersion = plugin.getDescription().getVersion();
-            if (pluginVersion.equalsIgnoreCase(dbolatest))
-            {
+            if(pluginVersion.equalsIgnoreCase(info.version))
                 return VersionInfo.LATEST;
-            }
-
-            Matcher plVersionMatcher = versionPattern.matcher(pluginVersion);
-            String extractedPluginVersion;
-
-            if (plVersionMatcher.matches())
+            switch (compareVersions(pluginVersion, info.version))
             {
-                extractedPluginVersion = plVersionMatcher.group(1);
-            }
-            else
-            {
-                return VersionInfo.UNKNOWN;
-            }
-
-            Matcher latestVersionMatcher = versionPattern.matcher(dbolatest);
-            String extractedLatestVersion;
-
-            if (latestVersionMatcher.matches())
-            {
-                extractedLatestVersion = latestVersionMatcher.group(1);
-            }
-            else
-            {
-                return VersionInfo.UNKNOWN;
-            }
-
-            int result = compareVersions(extractedPluginVersion, extractedLatestVersion);
-            switch (result)
-            {
-                case -1:
-                {
-                    return VersionInfo.OLD;
-                }
-                default:
-                {
-                    return VersionInfo.LATEST;
-                }
+                case -1: return VersionInfo.UNKNOWN;
+                case 1: return VersionInfo.LATEST;
+                case 2: return VersionInfo.OLD;
+                default: return VersionInfo.LATEST;
             }
         }
         catch (Exception e)
@@ -277,5 +156,38 @@ public class DBOUtilities
             e.printStackTrace();
             return VersionInfo.ERROR;
         }
+    }
+    
+    private static JSONArray slugSearch(String slug) throws MalformedURLException, IOException
+    {
+    	HttpURLConnection huc = openConnection(new URL(
+    		"https://api.curseforge.com/servermods/projects?search=" + slug));
+    	InputStreamReader reader = new InputStreamReader(huc.getInputStream());
+    	JSONArray a = (JSONArray) JSONValue.parse(reader);
+    	reader.close();
+    	return a;
+    }
+    
+    private static JSONObject getProjectObject(JSONArray a, String slug)
+    {
+    	for(Object o: a)
+    	{
+    		JSONObject p = (JSONObject) o;
+    		if(((String)p.get("slug")).equals(slug))
+    			return p;
+    	}
+    	return null;
+    }
+    
+    private static int getId(JSONObject searchObject)
+    {
+		return ((Long) searchObject.get("id")).intValue();
+    }
+    
+    private static HttpURLConnection openConnection(URL u) throws IOException
+    {
+        HttpURLConnection huc = (HttpURLConnection) u.openConnection();
+        huc.addRequestProperty("User-Agent", "PluginManager/v1.2 (by Technius and Sehales)");
+        return huc;
     }
 }

@@ -574,12 +574,12 @@ public class PMCommandExecutor implements CommandExecutor
                     else if (ver.version == null)
                     {
                         sender.sendMessage(ChatColor.YELLOW
-                                + "No version of the plugin exists on BukkitDev yet.");
+                        	+ "No version of the plugin exists on BukkitDev yet.");
                     }
                     else
                     {
                         VersionInfo info = DBOUtilities.isUpToDate(Bukkit.getPluginManager()
-                                .getPlugin(ver.pluginname), args[2]);
+                        	.getPlugin(ver.pluginname), ver);
                         switch (info)
                         {
                             case LATEST:
@@ -591,7 +591,7 @@ public class PMCommandExecutor implements CommandExecutor
                             case OLD:
                             {
                                 sender.sendMessage(ChatColor.GREEN + "There is a newer version of '"
-                                        + ver.pluginname + "' available: " + ver.version + "");
+                                	+ ver.pluginname + "' available: " + ver.version + "");
                                 break;
                             }
                             case NOT_IN_USE:
@@ -601,8 +601,8 @@ public class PMCommandExecutor implements CommandExecutor
                             }
                             case UNKNOWN:
                             {
-                            	sender.sendMessage(ChatColor.RED + "The version of '" + ver.pluginname + "' is"
-                            			+ " abnormal; please check the version manually on BukkitDev.");
+                            	sender.sendMessage(ChatColor.RED + "The '" + ver.version + "'version of '" + ver.pluginname + "' is"
+                            		+ " abnormal; please check the version manually on BukkitDev.");
                             	break;
                             }
                             default:
@@ -661,15 +661,9 @@ public class PMCommandExecutor implements CommandExecutor
     private boolean plugGetSearchCmd(final CommandSender sender, final String[] args)
     {
         if (noPerm(sender, "pluginmanager.plugget.search"))
-        {
             return true;
-        }
-
         if (args.length < 3)
-        {
             return usage(sender, "plm plug-get search <slug>");
-        }
-
         new BukkitRunnable() {
 
             @Override
@@ -679,7 +673,7 @@ public class PMCommandExecutor implements CommandExecutor
 
                 if (slugInfo.size() == 0)
                 {
-                    sender.sendMessage(ChatColor.RED + "Nothing results found for " + args[2] + "!");
+                    sender.sendMessage(ChatColor.RED + "No results found for " + args[2] + "!");
                 }
                 else
                 {
