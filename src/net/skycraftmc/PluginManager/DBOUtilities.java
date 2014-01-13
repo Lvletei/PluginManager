@@ -42,7 +42,6 @@ public class DBOUtilities
     	for(VersionComparator c: VersionComparator.MATCHERS)
     	{
     		int code = c.compare(v1, v2);
-    		System.out.println("code: " + code);
     		if(code != -1)return code;
     	}
     	return -1;
