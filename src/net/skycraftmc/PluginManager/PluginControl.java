@@ -424,7 +424,7 @@ public class PluginControl
 		{
 			try
 			{
-				loadersF = jpl.getClass().getDeclaredField("loaders0");
+				loadersF = jpl.getClass().getDeclaredField("loaders");
 				loadersF.setAccessible(true);
 			}
 			catch (Exception e)
@@ -435,7 +435,7 @@ public class PluginControl
 
 		try
 		{
-			Map<String, ClassLoader> loaderMap = (Map<String, ClassLoader>) loadersF
+			Map<String, PluginClassLoader> loaderMap = (Map<String, PluginClassLoader>) loadersF
 					.get(jpl);
 			loaderMap.remove(plugin.getDescription().getName());
 		}
