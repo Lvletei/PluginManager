@@ -1,4 +1,4 @@
-package net.skycraftmc.PluginManager;
+package co.technius.PluginManager;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;

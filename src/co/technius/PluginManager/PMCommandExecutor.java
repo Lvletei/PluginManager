@@ -1,13 +1,10 @@
-package net.skycraftmc.PluginManager;
+package co.technius.PluginManager;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
-
-import net.skycraftmc.PluginManager.DBOUtilities.VersionInfo;
-import net.skycraftmc.PluginManager.DBOUtilities.VersionInformation;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -21,6 +18,9 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import co.technius.PluginManager.DBOUtilities.VersionInfo;
+import co.technius.PluginManager.DBOUtilities.VersionInformation;
 
 public class PMCommandExecutor implements CommandExecutor
 {
@@ -564,6 +564,9 @@ public class PMCommandExecutor implements CommandExecutor
             @Override
             public void run()
             {
+            	if(args[2].equalsIgnoreCase("pluginmanager"))
+            		sender.sendMessage(ChatColor.RED + "Are you sure you have the right plugin?"
+            			+ " This plugin's slug is pm-pluginmanager.");
                 try
                 {
                     VersionInformation ver = DBOUtilities.getLatestVersion(args[2].toLowerCase());

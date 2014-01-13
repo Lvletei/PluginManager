@@ -1,4 +1,4 @@
-package net.skycraftmc.PluginManager;
+package co.technius.PluginManager;
 
 public class SlugInformation {
 

@@ -1,4 +1,4 @@
-package net.skycraftmc.PluginManager;
+package co.technius.PluginManager;
 
 import java.io.File;
 import java.io.IOException;

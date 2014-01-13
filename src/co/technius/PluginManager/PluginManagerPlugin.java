@@ -1,15 +1,15 @@
-package net.skycraftmc.PluginManager;
+package co.technius.PluginManager;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 
-import net.skycraftmc.PluginManager.DBOUtilities.VersionInfo;
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import co.technius.PluginManager.DBOUtilities.VersionInfo;
 
 public class PluginManagerPlugin extends JavaPlugin
 {

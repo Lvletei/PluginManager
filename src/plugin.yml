@@ -1,10 +1,10 @@
 name: PluginManager
 version: 1.2
 author: Technius
-website: skycraftmc.net
+website: technius.co
 description: A plugin used for managing plugins
 load-before: [PerWorldPlugins, MCore]
-main: net.skycraftmc.PluginManager.PluginManagerPlugin
+main: co.technius.PluginManager.PluginManagerPlugin
 commands:
     pluginmanager:
         description: PluginManager commands
