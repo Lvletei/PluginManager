@@ -6,3 +6,5 @@
 *.war
 *.ear
 bin
+/plugin.yml
+/build.jardesc
