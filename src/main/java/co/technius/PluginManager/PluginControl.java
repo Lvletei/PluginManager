@@ -293,15 +293,8 @@ public class PluginControl
 							new File("plugins" + File.separator + name + ".jar"));
 			return plugin;
 		}
-		catch (InvalidPluginException e)
-		{
-			e.printStackTrace();
-		}
-		catch (InvalidDescriptionException e)
-		{
-			e.printStackTrace();
-		}
-		catch (UnknownDependencyException e)
+		catch (InvalidPluginException |InvalidDescriptionException 
+				| UnknownDependencyException e)
 		{
 			e.printStackTrace();
 		}
@@ -364,6 +357,14 @@ public class PluginControl
 	@SuppressWarnings("unchecked")
 	public boolean unloadPlugin(Plugin plugin)
 	{
+		try
+		{
+			plugin.getClass().getClassLoader().getResources("*");
+		}
+		catch (IOException e1)
+		{
+			e1.printStackTrace();
+		}
 		SimplePluginManager spm = (SimplePluginManager) Bukkit.getServer()
 				.getPluginManager();
 		List<Plugin> pl;
