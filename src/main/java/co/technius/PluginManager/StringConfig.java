@@ -57,14 +57,12 @@ public class StringConfig
 
     public void start() throws IOException
     {
-        if (pw != null)
-            return;
         if (!f.exists())
         {
             f.getParentFile().mkdirs();
             f.createNewFile();
         }
-        
+        pw = new PrintWriter(f);
     }
 
     public void insertComment(String s)
@@ -225,8 +223,6 @@ public class StringConfig
             map.put(t[0], t[1].trim());
         }
         br.close();
-        //quote of the javadocs: if the file exists it will be truncated to zero size so we have to load it FIRST then we initalize the printwriter
-        pw = new PrintWriter(f);
     }
 
     public void writeKey(String k, boolean def)
