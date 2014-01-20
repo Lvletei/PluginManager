@@ -1,10 +1,9 @@
 .classpath
 
-
 *.class
 *.jar
 *.war
 *.ear
 bin
-/plugin.yml
 /build.jardesc
+target

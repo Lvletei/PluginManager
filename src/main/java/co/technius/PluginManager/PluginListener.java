@@ -1,12 +1,12 @@
 package co.technius.PluginManager;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class PluginListener implements Listener
 {
@@ -28,11 +28,9 @@ public class PluginListener implements Listener
         final String[] cmds = cmdConfig.getStringList(p.getName(), null);
         if (cmds != null)
         {
-            Bukkit.getScheduler().scheduleSyncDelayedTask(pmp, new Runnable() {
-
-                @Override
-                public void run()
-                {
+        	new BukkitRunnable() {
+				public void run()
+				{
                     for (String s : cmds)
                     {
                         PluginCommand cmd = con.getCommand((JavaPlugin) p, s);
@@ -41,9 +39,8 @@ public class PluginListener implements Listener
                             con.changePriority(p, cmd, true);
                         }
                     }
-                }
-
-            }, 1L);
+				}
+        	}.runTaskLater(pmp, 1);
         }
     }
 }

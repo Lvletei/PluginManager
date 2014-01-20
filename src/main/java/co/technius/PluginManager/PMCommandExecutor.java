@@ -489,7 +489,6 @@ public class PMCommandExecutor implements CommandExecutor
         return false;
     }
 
-    @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
     {
         if (args.length >= 1)
@@ -561,7 +560,6 @@ public class PMCommandExecutor implements CommandExecutor
         }
 
         new BukkitRunnable() {
-            @Override
             public void run()
             {
             	if(args[2].equalsIgnoreCase("pluginmanager"))
@@ -668,8 +666,6 @@ public class PMCommandExecutor implements CommandExecutor
         if (args.length < 3)
             return usage(sender, "plm plug-get search <slug>");
         new BukkitRunnable() {
-
-            @Override
             public void run()
             {
                 List<SlugInformation> slugInfo = DBOUtilities.getSlugInformationList(args[2]);

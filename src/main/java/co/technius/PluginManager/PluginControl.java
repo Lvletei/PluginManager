@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -24,7 +25,6 @@ import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
-import org.bukkit.plugin.java.PluginClassLoader;
 
 public class PluginControl
 {
@@ -159,23 +159,15 @@ public class PluginControl
 
 	public boolean closeClassLoader(Plugin plugin)
 	{
-		ClassLoader cl = plugin.getClass().getClassLoader();
-		if (cl instanceof PluginClassLoader)
+		try
 		{
-			PluginClassLoader pcl = (PluginClassLoader) cl;
-			try
-			{
-				Method m = pcl.getClass().getMethod("close");
-				m.setAccessible(true);
-				m.invoke(pcl);
-				return true;
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-			}
+			((URLClassLoader)plugin.getClass().getClassLoader()).close();
+			return true;
 		}
-
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 		return false;
 	}
 
@@ -231,11 +223,12 @@ public class PluginControl
 			ZipEntry pyml = jf.getEntry("plugin.yml");
 			if (pyml == null)
 			{
+				jf.close();
 				return null;
 			}
-
 			PluginDescriptionFile pdf = new PluginDescriptionFile(
 					jf.getInputStream(pyml));
+			jf.close();
 			return pdf;
 		}
 		catch (IOException ioe)
@@ -435,7 +428,7 @@ public class PluginControl
 
 		try
 		{
-			Map<String, PluginClassLoader> loaderMap = (Map<String, PluginClassLoader>) loadersF
+			Map<String, ?> loaderMap = (Map<String, ?>) loadersF
 					.get(jpl);
 			loaderMap.remove(plugin.getDescription().getName());
 		}
