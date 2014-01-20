@@ -376,11 +376,7 @@ public class PMCommandExecutor implements CommandExecutor
 
         for (Plugin p : plugins)
         {
-            String l = p.getName();
-            if (versions)
-            {
-                l = l + " " + p.getDescription().getVersion();
-            }
+            String l = p.getName() + (versions ? " " + p.getDescription().getVersion() : "");
             if (p.isEnabled())
             {
                 if (pes.isEmpty())
@@ -493,52 +489,24 @@ public class PMCommandExecutor implements CommandExecutor
     {
         if (args.length >= 1)
         {
-            if (args[0].equalsIgnoreCase("list"))
-            {
-                return listCmd(sender, args);
-            }
-            else if (args[0].equalsIgnoreCase("enable"))
-            {
-                return enableCmd(sender, args);
-            }
-            else if (args[0].equalsIgnoreCase("disable"))
-            {
-                return disableCmd(sender, args);
-            }
-            else if (args[0].equalsIgnoreCase("load"))
-            {
-                return loadCmd(sender, args);
-            }
-            else if (args[0].equalsIgnoreCase("unload"))
-            {
-                return unloadCmd(sender, args);
-            }
-            else if (args[0].equalsIgnoreCase("reload"))
-            {
-                return reloadCmd(sender, args);
-            }
-            else if (args[0].equalsIgnoreCase("sreload") || args[0].equalsIgnoreCase("softreload"))
-            {
-                return sreloadCmd(sender, args);
-            }
-            else if (args[0].equalsIgnoreCase("show"))
-            {
-                return showCmd(sender, args);
-            }
-            else if (args[0].equalsIgnoreCase("cmd"))
-            {
-                return cmdCmd(sender, args);
-            }
-            else if (args[0].equalsIgnoreCase("plug-get"))
-            {
-                return plugGetCmd(sender, args);
-            }
-            else
-            {
-                return msg(sender, ChatColor.GOLD + "Command unrecognized.  Type " + ChatColor.AQUA
-                        + "/plm" + ChatColor.GOLD + " for help");
-            }
-
+        	switch (args[0].toLowerCase())
+        	{
+        	case "list": return listCmd(sender, args);
+        	case "enable": return enableCmd(sender, args);
+        	case "disable": return disableCmd(sender, args);
+        	case "load": return loadCmd(sender, args);
+        	case "unload": return unloadCmd(sender, args);
+        	case "reload": return reloadCmd(sender, args);
+        	case "sreload":
+        	case "softreload":
+        		return sreloadCmd(sender, args);
+        	case "show": return showCmd(sender, args);
+        	case "cmd": return cmdCmd(sender, args);
+        	case "plug-get": return plugGetCmd(sender, args);
+        	default:
+        		return msg(sender, ChatColor.GOLD + "Command unrecognized.  Type " + ChatColor.AQUA
+                    + "/plm" + ChatColor.GOLD + " for help");
+        	}
         }
         else
         {
