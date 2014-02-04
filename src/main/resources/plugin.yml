@@ -3,7 +3,7 @@ version: 1.2.1
 author: Technius
 website: technius.co
 description: A plugin used for managing plugins
-load-before: [PerWorldPlugins, MCore]
+soft-depends: [PerWorldPlugins, MCore]
 main: co.technius.PluginManager.PluginManagerPlugin
 commands:
     pluginmanager:

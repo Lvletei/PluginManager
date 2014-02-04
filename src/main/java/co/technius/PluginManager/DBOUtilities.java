@@ -36,30 +36,31 @@ public class DBOUtilities
             this.type = type;
         }
     }
-    
+
     public static int compareVersions(String v1, String v2)
     {
-    	for(VersionComparator c: VersionComparator.MATCHERS)
-    	{
-    		int code = c.compare(v1, v2);
-    		if(code != -1)return code;
-    	}
-    	return -1;
+        for (VersionComparator c : VersionComparator.MATCHERS)
+        {
+            int code = c.compare(v1, v2);
+            if (code != -1)
+                return code;
+        }
+        return -1;
     }
 
     public static VersionInformation getLatestVersion(String slug) throws MalformedURLException,
             IOException
     {
-    	JSONObject po = getProjectObject(slugSearch(slug), slug);
-    	int id = getId(po);
-    	if(id == -1)return null;
+        JSONObject po = getProjectObject(slugSearch(slug), slug);
+        int id = getId(po);
+        if (id == -1)
+            return null;
         URL url = new URL("https://api.curseforge.com/servermods/files?projectIds=" + id);
         HttpURLConnection huc = openConnection(url);
         InputStreamReader reader = new InputStreamReader(huc.getInputStream());
         JSONArray files = (JSONArray) JSONValue.parse(reader);
-        VersionInformation inf = new VersionInformation(null, (String) po.get("name"),
-        	null, null);
-        if(files.size() == 0)
+        VersionInformation inf = new VersionInformation(null, (String) po.get("name"), null, null);
+        if (files.size() == 0)
             return inf;
         JSONObject v = (JSONObject) files.get(files.size() - 1);
         inf.version = (String) v.get("name");
@@ -83,7 +84,8 @@ public class DBOUtilities
         URL url = null;
         try
         {
-            url = new URL("https://api.curseforge.com/servermods/projects?search=" + name.toLowerCase());
+            url = new URL("https://api.curseforge.com/servermods/projects?search="
+                    + name.toLowerCase());
         }
         catch (MalformedURLException e)
         {
@@ -92,8 +94,9 @@ public class DBOUtilities
 
         try
         {
-        	HttpURLConnection huc = openConnection(url);
-            JSONArray slugArray = (JSONArray) JSONValue.parse(new InputStreamReader(huc.getInputStream()));
+            HttpURLConnection huc = openConnection(url);
+            JSONArray slugArray = (JSONArray) JSONValue.parse(new InputStreamReader(huc
+                    .getInputStream()));
             for (Object value : slugArray.toArray())
             {
                 if (value instanceof JSONObject)
@@ -113,41 +116,45 @@ public class DBOUtilities
 
         return slugInfo;
     }
-    
+
     public static VersionInfo isUpToDate(Plugin plugin, String slug)
     {
-    	try
-		{
-			return isUpToDate(plugin, getLatestVersion(slug));
-		}
-		catch (MalformedURLException e)
-		{
-			e.printStackTrace();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-    	return VersionInfo.ERROR;
+        try
+        {
+            return isUpToDate(plugin, getLatestVersion(slug));
+        }
+        catch (MalformedURLException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return VersionInfo.ERROR;
     }
 
     public static VersionInfo isUpToDate(Plugin plugin, VersionInformation info)
     {
-        if(plugin == null)
-        	return VersionInfo.NOT_IN_USE;
-        if(info.version == null)
-        	return VersionInfo.NONEXISTANT;
+        if (plugin == null)
+            return VersionInfo.NOT_IN_USE;
+        if (info.version == null)
+            return VersionInfo.NONEXISTANT;
         try
         {
             String pluginVersion = plugin.getDescription().getVersion();
-            if(pluginVersion.equalsIgnoreCase(info.version))
+            if (pluginVersion.equalsIgnoreCase(info.version))
                 return VersionInfo.LATEST;
             switch (compareVersions(pluginVersion, info.version))
             {
-                case -1: return VersionInfo.UNKNOWN;
-                case 1: return VersionInfo.LATEST;
-                case 2: return VersionInfo.OLD;
-                default: return VersionInfo.LATEST;
+                case -1:
+                    return VersionInfo.UNKNOWN;
+                case 1:
+                    return VersionInfo.LATEST;
+                case 2:
+                    return VersionInfo.OLD;
+                default:
+                    return VersionInfo.LATEST;
             }
         }
         catch (Exception e)
@@ -156,33 +163,33 @@ public class DBOUtilities
             return VersionInfo.ERROR;
         }
     }
-    
+
     private static JSONArray slugSearch(String slug) throws MalformedURLException, IOException
     {
-    	HttpURLConnection huc = openConnection(new URL(
-    		"https://api.curseforge.com/servermods/projects?search=" + slug));
-    	InputStreamReader reader = new InputStreamReader(huc.getInputStream());
-    	JSONArray a = (JSONArray) JSONValue.parse(reader);
-    	reader.close();
-    	return a;
+        HttpURLConnection huc = openConnection(new URL(
+                "https://api.curseforge.com/servermods/projects?search=" + slug));
+        InputStreamReader reader = new InputStreamReader(huc.getInputStream());
+        JSONArray a = (JSONArray) JSONValue.parse(reader);
+        reader.close();
+        return a;
     }
-    
+
     private static JSONObject getProjectObject(JSONArray a, String slug)
     {
-    	for(Object o: a)
-    	{
-    		JSONObject p = (JSONObject) o;
-    		if(((String)p.get("slug")).equals(slug))
-    			return p;
-    	}
-    	return null;
+        for (Object o : a)
+        {
+            JSONObject p = (JSONObject) o;
+            if (((String) p.get("slug")).equals(slug))
+                return p;
+        }
+        return null;
     }
-    
+
     private static int getId(JSONObject searchObject)
     {
-		return ((Long) searchObject.get("id")).intValue();
+        return ((Long) searchObject.get("id")).intValue();
     }
-    
+
     private static HttpURLConnection openConnection(URL u) throws IOException
     {
         HttpURLConnection huc = (HttpURLConnection) u.openConnection();

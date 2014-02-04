@@ -28,9 +28,9 @@ public class PluginListener implements Listener
         final String[] cmds = cmdConfig.getStringList(p.getName(), null);
         if (cmds != null)
         {
-        	new BukkitRunnable() {
-				public void run()
-				{
+            new BukkitRunnable() {
+                public void run()
+                {
                     for (String s : cmds)
                     {
                         PluginCommand cmd = con.getCommand((JavaPlugin) p, s);
@@ -39,8 +39,8 @@ public class PluginListener implements Listener
                             con.changePriority(p, cmd, true);
                         }
                     }
-				}
-        	}.runTaskLater(pmp, 1);
+                }
+            }.runTaskLater(pmp, 1);
         }
     }
 }

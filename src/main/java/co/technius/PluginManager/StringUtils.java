@@ -15,7 +15,8 @@ public class StringUtils
         for (int i = position; i < array.length; i++)
         {
             sb.append(array[i]);
-            if(i != array.length - 1)sb.append(" ");
+            if (i != array.length - 1)
+                sb.append(" ");
         }
         return sb.toString();
     }

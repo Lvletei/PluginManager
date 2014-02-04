@@ -55,25 +55,30 @@ public class PMCommandExecutor implements CommandExecutor
     private final CmdDesc[]     help        = {
             new CmdDesc("plm enable <plugin>", "Enables a plugin", "pluginmanager.enable"),
             new CmdDesc("plm disable <plugin>", "Disables a plugin", "pluginmanager.disable"),
-            new CmdDesc("plm load <plugin>", "Loads a plugin(Must use a file name, no .jar needed)", "pluginmanager.load"),
+            new CmdDesc("plm load <plugin>",
+                    "Loads a plugin(Must use a file name, no .jar needed)", "pluginmanager.load"),
             new CmdDesc("plm unload <plugin>", "Unloads a plugin", "pluginmanager.unload"),
             new CmdDesc("plm reload <plugin>", "Unloads and loads a plugin", "pluginmanager.reload"),
-            new CmdDesc("plm sreload <plugin>", "Disables and enables a plugin", "pluginmanager.softreload"),
-            new CmdDesc("plm show <plugin>", "Shows detailed information about a plugin", "pluginmanager.show"),
-            new CmdDesc("plm list [options]", "Lists plugins with specified options", "pluginmanager.list"),
+            new CmdDesc("plm sreload <plugin>", "Disables and enables a plugin",
+                    "pluginmanager.softreload"),
+            new CmdDesc("plm show <plugin>", "Shows detailed information about a plugin",
+                    "pluginmanager.show"),
+            new CmdDesc("plm list [options]", "Lists plugins with specified options",
+                    "pluginmanager.list"),
             new CmdDesc("plm cmd", "Shows command manipulation menu", null),
-            new CmdDesc("plm plug-get", "Shows BukkitDev lookup menu", null)
-    };
+            new CmdDesc("plm plug-get", "Shows BukkitDev lookup menu", null) };
 
-    private final CmdDesc[]     pluggethelp = { 
-    		new CmdDesc("plm plug-get search <name>", "Searches for a plugin on BukkitDev", "pluginmanager.plugget.search"),
-    		new CmdDesc("plm plug-get check <slug>", "Checks if an update is available", "pluginmanager.plugget.check")
-    };
+    private final CmdDesc[]     pluggethelp = {
+            new CmdDesc("plm plug-get search <name>", "Searches for a plugin on BukkitDev",
+                    "pluginmanager.plugget.search"),
+            new CmdDesc("plm plug-get check <slug>", "Checks if an update is available",
+                    "pluginmanager.plugget.check") };
 
     private final CmdDesc[]     cmdhelp     = {
-            new CmdDesc("plm cmd unregister <command> <plugin>", "Unregisters a command", "pluginmanager.cmd.unregister"),
-            new CmdDesc("plm cmd priority <command> <plugin>", "Elevates command priority to highest", "pluginmanager.cmd.priority")
-    };
+            new CmdDesc("plm cmd unregister <command> <plugin>", "Unregisters a command",
+                    "pluginmanager.cmd.unregister"),
+            new CmdDesc("plm cmd priority <command> <plugin>",
+                    "Elevates command priority to highest", "pluginmanager.cmd.priority") };
 
     PMCommandExecutor(PluginManagerPlugin plugin, PluginControl control)
     {
@@ -489,24 +494,33 @@ public class PMCommandExecutor implements CommandExecutor
     {
         if (args.length >= 1)
         {
-        	switch (args[0].toLowerCase())
-        	{
-        	case "list": return listCmd(sender, args);
-        	case "enable": return enableCmd(sender, args);
-        	case "disable": return disableCmd(sender, args);
-        	case "load": return loadCmd(sender, args);
-        	case "unload": return unloadCmd(sender, args);
-        	case "reload": return reloadCmd(sender, args);
-        	case "sreload":
-        	case "softreload":
-        		return sreloadCmd(sender, args);
-        	case "show": return showCmd(sender, args);
-        	case "cmd": return cmdCmd(sender, args);
-        	case "plug-get": return plugGetCmd(sender, args);
-        	default:
-        		return msg(sender, ChatColor.GOLD + "Command unrecognized.  Type " + ChatColor.AQUA
-                    + "/plm" + ChatColor.GOLD + " for help");
-        	}
+            switch (args[0].toLowerCase())
+            {
+                case "list":
+                    return listCmd(sender, args);
+                case "enable":
+                    return enableCmd(sender, args);
+                case "disable":
+                    return disableCmd(sender, args);
+                case "load":
+                    return loadCmd(sender, args);
+                case "unload":
+                    return unloadCmd(sender, args);
+                case "reload":
+                    return reloadCmd(sender, args);
+                case "sreload":
+                case "softreload":
+                    return sreloadCmd(sender, args);
+                case "show":
+                    return showCmd(sender, args);
+                case "cmd":
+                    return cmdCmd(sender, args);
+                case "plug-get":
+                    return plugGetCmd(sender, args);
+                default:
+                    return msg(sender, ChatColor.GOLD + "Command unrecognized.  Type "
+                            + ChatColor.AQUA + "/plm" + ChatColor.GOLD + " for help");
+            }
         }
         else
         {
@@ -530,9 +544,9 @@ public class PMCommandExecutor implements CommandExecutor
         new BukkitRunnable() {
             public void run()
             {
-            	if(args[2].equalsIgnoreCase("pluginmanager"))
-            		sender.sendMessage(ChatColor.RED + "Are you sure you have the right plugin?"
-            			+ " This plugin's slug is pm-pluginmanager.");
+                if (args[2].equalsIgnoreCase("pluginmanager"))
+                    sender.sendMessage(ChatColor.RED + "Are you sure you have the right plugin?"
+                            + " This plugin's slug is pm-pluginmanager.");
                 try
                 {
                     VersionInformation ver = DBOUtilities.getLatestVersion(args[2].toLowerCase());
@@ -543,41 +557,53 @@ public class PMCommandExecutor implements CommandExecutor
                     else if (ver.version == null)
                     {
                         sender.sendMessage(ChatColor.YELLOW
-                        	+ "No version of the plugin exists on BukkitDev yet.");
+                                + "No version of the plugin exists on BukkitDev yet.");
                     }
                     else
                     {
                         VersionInfo info = DBOUtilities.isUpToDate(Bukkit.getPluginManager()
-                        	.getPlugin(ver.pluginname), ver);
+                                .getPlugin(ver.pluginname), ver);
                         switch (info)
                         {
                             case LATEST:
                             {
                                 sender.sendMessage(ChatColor.GREEN
-                                        + "You are using the latest version of '" + ver.pluginname + "'.");
+                                        + "You are using the latest version of '" + ver.pluginname
+                                        + "'.");
                                 break;
                             }
                             case OLD:
                             {
-                                sender.sendMessage(ChatColor.GREEN + "There is a newer version of '"
-                                	+ ver.pluginname + "' available: " + ver.version + "");
+                                sender.sendMessage(ChatColor.GREEN
+                                        + "There is a newer version of '" + ver.pluginname
+                                        + "' available: " + ver.version + "");
                                 break;
                             }
                             case NOT_IN_USE:
                             {
-                                sender.sendMessage(ChatColor.RED + "You are not using '" + ver.pluginname + "' on your server!");
+                                sender.sendMessage(ChatColor.RED + "You are not using '"
+                                        + ver.pluginname + "' on your server!");
                                 break;
                             }
                             case UNKNOWN:
                             {
-                            	sender.sendMessage(ChatColor.RED + "The '" + ver.version + "'version of '" + ver.pluginname + "' is"
-                            		+ " abnormal; please check the version manually on BukkitDev.");
-                            	break;
+                                sender.sendMessage(ChatColor.RED
+                                        + "The '"
+                                        + ver.version
+                                        + "'version of '"
+                                        + ver.pluginname
+                                        + "' is"
+                                        + " abnormal; please check the version manually on BukkitDev.");
+                                break;
                             }
                             default:
                             {
-                                sender.sendMessage(ChatColor.RED + "Failed to check for updates for " + args[2] + "!"
-                                        + (sender instanceof Player ? " Check console for details!" : ""));
+                                sender.sendMessage(ChatColor.RED
+                                        + "Failed to check for updates for "
+                                        + args[2]
+                                        + "!"
+                                        + (sender instanceof Player ? " Check console for details!"
+                                                : ""));
                                 break;
                             }
                         }
