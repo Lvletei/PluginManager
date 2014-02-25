@@ -23,7 +23,6 @@ import org.bukkit.plugin.InvalidDescriptionException;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.UnknownDependencyException;
@@ -198,34 +197,6 @@ public class PluginControl
     public void enablePlugin(Plugin plugin)
     {
         Bukkit.getServer().getPluginManager().enablePlugin(plugin);
-    }
-
-    @SuppressWarnings("unchecked")
-    public Map<String, Class<?>> getCachedClasses(Object javaClassLoader)
-    {
-        Object foundObject = null;
-        try
-        {
-            for (Field f : javaClassLoader.getClass().getDeclaredFields())
-            {
-                f.setAccessible(true);
-
-                if (f.getName().equals("classes"))
-                {
-                    foundObject = f.get(javaClassLoader);
-                }
-            }
-
-            Map<String, Class<?>> classes = (Map<String, Class<?>>) foundObject;
-            return classes;
-        }
-        catch (SecurityException | IllegalArgumentException | IllegalAccessException e)
-        {
-            e.printStackTrace();
-        }
-
-        return null;
-
     }
 
     public PluginCommand getCommand(JavaPlugin plugin, String command)
@@ -408,6 +379,14 @@ public class PluginControl
     @SuppressWarnings("unchecked")
     public boolean unloadPlugin(Plugin plugin)
     {
+        try
+        {
+            plugin.getClass().getClassLoader().getResources("*");
+        }
+        catch (IOException e1)
+        {
+            e1.printStackTrace();
+        }
         // SimplePluginManager spm = (SimplePluginManager)
         // Bukkit.getServer().getPluginManager();
         PluginManager pm = Bukkit.getServer().getPluginManager();
@@ -449,21 +428,6 @@ public class PluginControl
             }
         }
 
-        PluginLoader loader = plugin.getPluginLoader();
-        Map<String, Object> loaderMap = null;
-        try
-        {
-            loadersF = loader.getClass().getDeclaredField("loaders");
-            loadersF.setAccessible(true);
-            loaderMap = (Map<String, Object>) loadersF.get(loader);
-        }
-        catch (NoSuchFieldException | SecurityException | IllegalArgumentException
-                | IllegalAccessException e1)
-        {
-            e1.printStackTrace();
-        }
-        Object pluginClassLoader = loaderMap.get(plugin.getDescription().getName());
-
         pm.disablePlugin(plugin);
         synchronized (pm)
         {
@@ -487,24 +451,8 @@ public class PluginControl
 
         try
         {
+            Map<String, ?> loaderMap = (Map<String, ?>) loadersF.get(jpl);
             loaderMap.remove(plugin.getDescription().getName());
-            Map<String, Class<?>> pluginClassesMap = getCachedClasses(pluginClassLoader);
-            String[] pluginClasses = pluginClassesMap.keySet().toArray(new String[0]);
-            for (Map.Entry<String, Object> entry : loaderMap.entrySet().toArray(new Map.Entry[0]))
-            {
-                try
-                {
-                    Map<String, Class<?>> classes = getCachedClasses(entry.getValue());
-                    for (String className : pluginClasses)
-                    {
-                        classes.remove(className);
-                    }
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-            }
         }
         catch (Exception e)
         {
