@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
@@ -303,15 +304,19 @@ public class PluginControl
         Plugin plugin;
         try
         {
-            plugin = Bukkit.getServer().getPluginManager()
-                    .loadPlugin(new File("plugins" + File.separator + name + ".jar"));
+            plugin = Bukkit
+                    .getServer()
+                    .getPluginManager()
+                    .loadPlugin(
+                            new File("plugins" + File.separator + name
+                                    + (name.endsWith(".jar") ? "" : ".jar")));
             try
             {
                 plugin.onLoad();
             }
             catch (Exception e)
             {
-                System.out.println("Failed to call call 'onLoad()' for plugin '" + plugin.getName()
+                System.out.println("Failed to call 'onLoad()' for plugin '" + plugin.getName()
                         + "'");
                 e.printStackTrace();
             }
@@ -464,6 +469,89 @@ public class PluginControl
         System.gc();
 
         return true;
+    }
+
+    public boolean unloadRecursively(Plugin plugin)
+    {
+        Stack<String> pluginFiles = unloadRecursively(plugin.getName(), plugin, new Stack<String>());
+        while (pluginFiles.size() > 0)
+        {
+            enablePlugin(loadPlugin(pluginFiles.pop()));
+        }
+        return true;
+    }
+
+    // it could be shorter and more compact, but I wrote it just straight down
+    // for making changes more easier (at least for me)
+    public Stack<String> unloadRecursively(String doNotLoad, Plugin plugin,
+            Stack<String> pluginFiles)
+    {
+
+        if (!plugin.getName().equals(doNotLoad))
+        {
+            File file = getFile((JavaPlugin) plugin);
+            pluginFiles.push(file.getName());
+        }
+
+        PluginManager pm = Bukkit.getPluginManager();
+        for (Plugin p : pm.getPlugins())
+        {
+            List<String> depend = p.getDescription().getDepend();
+            if (depend != null)
+            {
+                for (String s : depend)
+                {
+                    if (s.equals(plugin.getName()))
+                    {
+                        unloadRecursively(doNotLoad, p, pluginFiles);
+                    }
+                }
+            }
+
+            List<String> softDepend = p.getDescription().getSoftDepend();
+            if (softDepend != null)
+            {
+                for (String s : softDepend)
+                {
+                    if (s.equals(plugin.getName()))
+                    {
+                        unloadRecursively(doNotLoad, p, pluginFiles);
+                    }
+                }
+            }
+        }
+
+        if (unloadPlugin(plugin))
+        {
+
+            List<String> depend = plugin.getDescription().getDepend();
+            if (depend != null)
+            {
+                for (String s : depend)
+                {
+                    Plugin p = pm.getPlugin(s);
+                    if (p != null)
+                    {
+                        unloadRecursively(doNotLoad, p, pluginFiles);
+                    }
+                }
+            }
+
+            List<String> softDepend = plugin.getDescription().getSoftDepend();
+            if (softDepend != null)
+            {
+                for (String s : softDepend)
+                {
+                    Plugin p = pm.getPlugin(s);
+                    if (p != null)
+                    {
+                        unloadRecursively(doNotLoad, p, pluginFiles);
+                    }
+                }
+            }
+        }
+
+        return pluginFiles;
     }
 
     public boolean unregisterCommand(JavaPlugin plugin, String command)

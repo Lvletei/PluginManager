@@ -490,6 +490,7 @@ public class PMCommandExecutor implements CommandExecutor
         return false;
     }
 
+    @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
     {
         if (args.length >= 1)
@@ -542,11 +543,14 @@ public class PMCommandExecutor implements CommandExecutor
         }
 
         new BukkitRunnable() {
+            @Override
             public void run()
             {
                 if (args[2].equalsIgnoreCase("pluginmanager"))
+                {
                     sender.sendMessage(ChatColor.RED + "Are you sure you have the right plugin?"
                             + " This plugin's slug is pm-pluginmanager.");
+                }
                 try
                 {
                     VersionInformation ver = DBOUtilities.getLatestVersion(args[2].toLowerCase());
@@ -656,10 +660,15 @@ public class PMCommandExecutor implements CommandExecutor
     private boolean plugGetSearchCmd(final CommandSender sender, final String[] args)
     {
         if (noPerm(sender, "pluginmanager.plugget.search"))
+        {
             return true;
+        }
         if (args.length < 3)
+        {
             return usage(sender, "plm plug-get search <slug>");
+        }
         new BukkitRunnable() {
+            @Override
             public void run()
             {
                 List<SlugInformation> slugInfo = DBOUtilities.getSlugInformationList(args[2]);
@@ -875,7 +884,8 @@ public class PMCommandExecutor implements CommandExecutor
         {
             boolean t = plugin == this;
             pluginMngr.setUnload(t);
-            if (control.unloadPlugin(plugin))
+            // if (control.unloadPlugin(plugin))
+            if (control.unloadRecursively(plugin))
             {
                 sender.sendMessage(ChatColor.GREEN + pName + " "
                         + plugin.getDescription().getVersion() + " successfully unloaded!");
