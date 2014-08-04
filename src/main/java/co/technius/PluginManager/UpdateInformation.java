@@ -2,32 +2,27 @@ package co.technius.PluginManager;
 
 import java.net.URL;
 
-public class UpdateInformation
-{
+public class UpdateInformation {
 
-    private String version;
-    private URL    link;
-    private String changelog;
+    private final String version;
+    private final URL link;
+    private final String changelog;
 
-    public UpdateInformation(String version, URL link, String changelog)
-    {
+    public UpdateInformation(final String version, final URL link, final String changelog) {
         this.link = link;
         this.version = version;
         this.changelog = changelog;
     }
 
-    public String getChangelog()
-    {
+    public String getChangelog() {
         return changelog;
     }
 
-    public URL getLink()
-    {
+    public URL getLink() {
         return link;
     }
 
-    public String getVersion()
-    {
+    public String getVersion() {
         return version;
     }
 }

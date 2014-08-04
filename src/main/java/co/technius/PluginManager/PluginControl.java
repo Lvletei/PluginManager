@@ -30,39 +30,30 @@ import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
 
-public class PluginControl
-{
+public class PluginControl {
 
     @SuppressWarnings("serial")
-    static class PMStartupException extends Exception
-    {
+    static class PMStartupException extends Exception {
 
-        public PMStartupException(String string)
-        {
+        public PMStartupException(final String string) {
             super(string);
         }
     }
 
-    private SimpleCommandMap     scm;
+    private SimpleCommandMap scm;
     private Map<String, Command> kc;
-    private Field                loadersF;
+    private Field loadersF;
 
-    private StringConfig         cmdConfig;
+    private final StringConfig cmdConfig;
 
     @SuppressWarnings("unchecked")
-    public PluginControl(StringConfig cmdConfig) throws SecurityException, NoSuchFieldException,
-            IllegalArgumentException, IllegalAccessException, PMStartupException
-    {
+    public PluginControl(final StringConfig cmdConfig) throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, PMStartupException {
         this.cmdConfig = cmdConfig;
-        PluginManager bpm = Bukkit.getServer().getPluginManager();
+        final PluginManager bpm = Bukkit.getServer().getPluginManager();
 
-        if (!(bpm instanceof SimplePluginManager))
-        {
-            if (Bukkit.getPluginManager().getPlugin("PerWorldPlugins") == null
-                    || !(bpm instanceof FakePluginManager))
-            {
-                throw new PMStartupException("Unknown Bukkit plugin system detected: "
-                        + bpm.getClass().getName());
+        if (!(bpm instanceof SimplePluginManager)) {
+            if (Bukkit.getPluginManager().getPlugin("PerWorldPlugins") == null || !(bpm instanceof FakePluginManager)) {
+                throw new PMStartupException("Unknown Bukkit plugin system detected: " + bpm.getClass().getName());
             }
         }
 
@@ -72,10 +63,8 @@ public class PluginControl
         scmF.setAccessible(true);
         scm = (SimpleCommandMap) scmF.get(bpm);
 
-        if (!(scm instanceof SimpleCommandMap) && !(scm instanceof FakeSimpleCommandMap))
-        {
-            throw new PMStartupException("Unsupported Bukkit command system detected: "
-                    + scm.getClass().getName());
+        if (!(scm instanceof SimpleCommandMap) && !(scm instanceof FakeSimpleCommandMap)) {
+            throw new PMStartupException("Unsupported Bukkit command system detected: " + scm.getClass().getName());
         }
 
         Field kcF;
@@ -84,57 +73,13 @@ public class PluginControl
         kc = (Map<String, Command>) kcF.get(scm);
     }
 
-    private void addToConfig(String pName, String cmdName)
-    {
-        if (!cmdConfig.contains(pName))
-        {
-            cmdConfig.set(pName, cmdName);
-        }
-        else
-        {
-            StringBuilder sb = new StringBuilder();
-
-            for (String s : cmdConfig.getStringList(pName, null))
-            {
-                if (s.equals(cmdName))
-                {
-                    return;
-                }
-                sb.append(s).append(',');
-            }
-            sb.append(cmdName);
-            cmdConfig.set(pName, sb.toString());
-        }
-
-        for (String key : cmdConfig.getKeySet())
-        {
-            if (key.equals(pName))
-            {
-                continue;
-            }
-
-            List<String> values = Arrays.asList(cmdConfig.getStringList(key, null));
-            for (String s : values.toArray(new String[0]))
-            {
-                if (cmdName.equalsIgnoreCase(s))
-                {
-                    values.remove(s);
-                }
-            }
-        }
-    }
-
-    public boolean changeDataFolder(JavaPlugin plugin, String name)
-    {
+    public boolean changeDataFolder(final JavaPlugin plugin, final String name) {
         Field f;
-        try
-        {
+        try {
             f = plugin.getDescription().getClass().getDeclaredField("dataFolder");
             f.setAccessible(true);
             f.set(plugin, new File("plugins" + File.separator + name));
-        }
-        catch (Exception e)
-        {
+        } catch (final Exception e) {
             e.printStackTrace();
             return false;
         }
@@ -142,25 +87,18 @@ public class PluginControl
         return true;
     }
 
-    public boolean changePriority(Plugin p, PluginCommand command, boolean pluginLoad)
-    {
-        if (isTopPriority(p, command.getName()))
-        {
+    public boolean changePriority(final Plugin p, final PluginCommand command, final boolean pluginLoad) {
+        if (isTopPriority(p, command.getName())) {
             return true;
         }
 
-        synchronized (scm)
-        {
-            if (kc.containsKey(command.getName()))
-            {
-                Command ctemp = kc.get(command.getName());
-                if (ctemp instanceof PluginCommand)
-                {
-                    kc.put(((PluginCommand) ctemp).getPlugin().getName() + ":" + ctemp.getName(),
-                            ctemp);
+        synchronized (scm) {
+            if (kc.containsKey(command.getName())) {
+                final Command ctemp = kc.get(command.getName());
+                if (ctemp instanceof PluginCommand) {
+                    kc.put(((PluginCommand) ctemp).getPlugin().getName() + ":" + ctemp.getName(), ctemp);
                     kc.put(command.getName(), command);
-                    if (!pluginLoad)
-                    {
+                    if (!pluginLoad) {
                         addToConfig(p.getName(), command.getName());
                     }
                 }
@@ -170,48 +108,32 @@ public class PluginControl
         return true;
     }
 
-    void cleanup()
-    {
-        scm = null;
-        kc = null;
-    }
-
-    public boolean closeClassLoader(Plugin plugin)
-    {
-        try
-        {
+    public boolean closeClassLoader(final Plugin plugin) {
+        try {
             ((URLClassLoader) plugin.getClass().getClassLoader()).close();
             return true;
-        }
-        catch (IOException e)
-        {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    public void disablePlugin(Plugin plugin)
-    {
+    public void disablePlugin(final Plugin plugin) {
         Bukkit.getServer().getPluginManager().disablePlugin(plugin);
     }
 
-    public void enablePlugin(Plugin plugin)
-    {
+    public void enablePlugin(final Plugin plugin) {
         Bukkit.getServer().getPluginManager().enablePlugin(plugin);
     }
 
-    public PluginCommand getCommand(JavaPlugin plugin, String command)
-    {
+    public PluginCommand getCommand(final JavaPlugin plugin, final String command) {
         Method m;
         PluginCommand cmd = null;
-        try
-        {
+        try {
             m = JavaPlugin.class.getDeclaredMethod("getCommand", String.class);
             m.setAccessible(true);
             cmd = (PluginCommand) m.invoke(plugin, command);
-        }
-        catch (Exception e)
-        {
+        } catch (final Exception e) {
             e.printStackTrace();
             return null;
         }
@@ -219,160 +141,115 @@ public class PluginControl
         return cmd;
     }
 
-    public PluginDescriptionFile getDescriptionFromJar(File plugin)
-    {
-        if (!plugin.exists())
-        {
+    public PluginDescriptionFile getDescriptionFromJar(final File plugin) {
+        if (!plugin.exists()) {
             return null;
         }
 
-        if (plugin.isDirectory())
-        {
+        if (plugin.isDirectory()) {
             return null;
         }
 
-        if (!plugin.getName().endsWith(".jar"))
-        {
+        if (!plugin.getName().endsWith(".jar")) {
             return null;
         }
 
-        try
-        {
-            JarFile jf = new JarFile(plugin);
-            ZipEntry pyml = jf.getEntry("plugin.yml");
-            if (pyml == null)
-            {
+        try {
+            final JarFile jf = new JarFile(plugin);
+            final ZipEntry pyml = jf.getEntry("plugin.yml");
+            if (pyml == null) {
                 jf.close();
                 return null;
             }
-            PluginDescriptionFile pdf = new PluginDescriptionFile(jf.getInputStream(pyml));
+            final PluginDescriptionFile pdf = new PluginDescriptionFile(jf.getInputStream(pyml));
             jf.close();
             return pdf;
-        }
-        catch (IOException ioe)
-        {
+        } catch (final IOException ioe) {
             ioe.printStackTrace();
-        }
-        catch (InvalidDescriptionException ioe)
-        {
+        } catch (final InvalidDescriptionException ioe) {
             ioe.printStackTrace();
         }
         return null;
     }
 
-    public File getFile(JavaPlugin p)
-    {
+    public File getFile(final JavaPlugin p) {
         Field f;
-        try
-        {
+        try {
             f = JavaPlugin.class.getDeclaredField("file");
             f.setAccessible(true);
             return (File) f.get(p);
-        }
-        catch (Exception e)
-        {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
 
         return null;
     }
 
-    public boolean hasCommand(JavaPlugin plugin, String command)
-    {
+    public boolean hasCommand(final JavaPlugin plugin, final String command) {
         return getCommand(plugin, command) != null;
     }
 
-    public boolean isTopPriority(Plugin p, String command)
-    {
-        Command c = kc.get(command);
-        if (!(c instanceof PluginCommand))
-        {
+    public boolean isTopPriority(final Plugin p, final String command) {
+        final Command c = kc.get(command);
+        if (!(c instanceof PluginCommand)) {
             return false;
         }
 
-        PluginCommand pc = (PluginCommand) c;
-        if (pc.getPlugin() == p)
-        {
+        final PluginCommand pc = (PluginCommand) c;
+        if (pc.getPlugin() == p) {
             return true;
         }
 
         return false;
     }
 
-    public Plugin loadPlugin(String name)
-    {
+    public Plugin loadPlugin(final String name) {
         Plugin plugin;
-        try
-        {
-            plugin = Bukkit
-                    .getServer()
-                    .getPluginManager()
-                    .loadPlugin(
-                            new File("plugins" + File.separator + name
-                                    + (name.endsWith(".jar") ? "" : ".jar")));
-            try
-            {
+        try {
+            plugin = Bukkit.getServer().getPluginManager().loadPlugin(new File("plugins" + File.separator + name + (name.endsWith(".jar") ? "" : ".jar")));
+            try {
                 plugin.onLoad();
-            }
-            catch (Exception e)
-            {
-                System.out.println("Failed to call 'onLoad()' for plugin '" + plugin.getName()
-                        + "'");
+            } catch (final Exception e) {
+                System.out.println("Failed to call 'onLoad()' for plugin '" + plugin.getName() + "'");
                 e.printStackTrace();
             }
             return plugin;
-        }
-        catch (InvalidPluginException | InvalidDescriptionException | UnknownDependencyException e)
-        {
+        } catch (InvalidPluginException | InvalidDescriptionException | UnknownDependencyException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public void registerCommand(Plugin plugin, PluginCommand cmd)
-    {
+    public void registerCommand(final Plugin plugin, final PluginCommand cmd) {
         registerCommand(plugin, cmd, true);
     }
 
-    public void registerCommand(Plugin plugin, PluginCommand cmd, boolean hasPriority)
-    {
-        if (hasPriority)
-        {
+    public void registerCommand(final Plugin plugin, final PluginCommand cmd, final boolean hasPriority) {
+        if (hasPriority) {
             kc.put(cmd.getName().toLowerCase(), cmd);
-        }
-        else
-        {
+        } else {
             scm.register(plugin.getName(), cmd);
         }
     }
 
-    public void registerCommands(Plugin p)
-    {
-        JavaPlugin plugin = (JavaPlugin) p;
-        for (Map.Entry<String, Map<String, Object>> entry : plugin.getDescription().getCommands()
-                .entrySet())
-        {
-            PluginCommand c = plugin.getCommand(entry.getKey());
-            if (c == null)
-            {
+    public void registerCommands(final Plugin p) {
+        final JavaPlugin plugin = (JavaPlugin) p;
+        for (final Map.Entry<String, Map<String, Object>> entry : plugin.getDescription().getCommands().entrySet()) {
+            final PluginCommand c = plugin.getCommand(entry.getKey());
+            if (c == null) {
                 continue;
             }
             kc.put(c.getName().toLowerCase(), c);
         }
     }
 
-    public boolean setName(Plugin plugin, String name)
-    {
-        for (Plugin p : Bukkit.getServer().getPluginManager().getPlugins())
-        {
-            try
-            {
-                Field f = PluginDescriptionFile.class.getDeclaredField("name");
+    public boolean setName(final Plugin plugin, final String name) {
+        for (final Plugin p : Bukkit.getServer().getPluginManager().getPlugins()) {
+            try {
+                final Field f = PluginDescriptionFile.class.getDeclaredField("name");
                 f.setAccessible(true);
                 f.set(p.getDescription(), name);
-            }
-            catch (Exception e)
-            {
+            } catch (final Exception e) {
                 e.printStackTrace();
                 return false;
             }
@@ -382,23 +259,18 @@ public class PluginControl
     }
 
     @SuppressWarnings("unchecked")
-    public boolean unloadPlugin(Plugin plugin)
-    {
-        try
-        {
+    public boolean unloadPlugin(final Plugin plugin) {
+        try {
             plugin.getClass().getClassLoader().getResources("*");
-        }
-        catch (IOException e1)
-        {
+        } catch (final IOException e1) {
             e1.printStackTrace();
         }
         // SimplePluginManager spm = (SimplePluginManager)
         // Bukkit.getServer().getPluginManager();
-        PluginManager pm = Bukkit.getServer().getPluginManager();
+        final PluginManager pm = Bukkit.getServer().getPluginManager();
         List<Plugin> pl;
         Map<String, Plugin> ln;
-        try
-        {
+        try {
             Field lnF;
             lnF = pm.getClass().getDeclaredField("lookupNames");
             lnF.setAccessible(true);
@@ -408,24 +280,18 @@ public class PluginControl
             plF = pm.getClass().getDeclaredField("plugins");
             plF.setAccessible(true);
             pl = (List<Plugin>) plF.get(pm);
-        }
-        catch (Exception e)
-        {
+        } catch (final Exception e) {
             e.printStackTrace();
             return false;
         }
 
-        synchronized (scm)
-        {
-            Iterator<Map.Entry<String, Command>> it = kc.entrySet().iterator();
-            while (it.hasNext())
-            {
-                Map.Entry<String, Command> entry = it.next();
-                if (entry.getValue() instanceof PluginCommand)
-                {
-                    PluginCommand c = (PluginCommand) entry.getValue();
-                    if (c.getPlugin().getName().equalsIgnoreCase(plugin.getName()))
-                    {
+        synchronized (scm) {
+            final Iterator<Map.Entry<String, Command>> it = kc.entrySet().iterator();
+            while (it.hasNext()) {
+                final Map.Entry<String, Command> entry = it.next();
+                if (entry.getValue() instanceof PluginCommand) {
+                    final PluginCommand c = (PluginCommand) entry.getValue();
+                    if (c.getPlugin().getName().equalsIgnoreCase(plugin.getName())) {
                         c.unregister(scm);
                         it.remove();
                     }
@@ -434,33 +300,25 @@ public class PluginControl
         }
 
         pm.disablePlugin(plugin);
-        synchronized (pm)
-        {
+        synchronized (pm) {
             ln.remove(plugin.getName());
             pl.remove(plugin);
         }
 
-        JavaPluginLoader jpl = (JavaPluginLoader) plugin.getPluginLoader();
-        if (loadersF == null)
-        {
-            try
-            {
+        final JavaPluginLoader jpl = (JavaPluginLoader) plugin.getPluginLoader();
+        if (loadersF == null) {
+            try {
                 loadersF = jpl.getClass().getDeclaredField("loaders");
                 loadersF.setAccessible(true);
-            }
-            catch (Exception e)
-            {
+            } catch (final Exception e) {
                 e.printStackTrace();
             }
         }
 
-        try
-        {
-            Map<String, ?> loaderMap = (Map<String, ?>) loadersF.get(jpl);
+        try {
+            final Map<String, ?> loaderMap = (Map<String, ?>) loadersF.get(jpl);
             loaderMap.remove(plugin.getDescription().getName());
-        }
-        catch (Exception e)
-        {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
 
@@ -471,11 +329,9 @@ public class PluginControl
         return true;
     }
 
-    public boolean unloadRecursively(Plugin plugin)
-    {
-        Stack<String> pluginFiles = unloadRecursively(plugin.getName(), plugin, new Stack<String>());
-        while (pluginFiles.size() > 0)
-        {
+    public boolean unloadRecursively(final Plugin plugin) {
+        final Stack<String> pluginFiles = unloadRecursively(plugin.getName(), plugin, new Stack<String>());
+        while (pluginFiles.size() > 0) {
             enablePlugin(loadPlugin(pluginFiles.pop()));
         }
         return true;
@@ -483,68 +339,51 @@ public class PluginControl
 
     // it could be shorter and more compact, but I wrote it just straight down
     // for making changes more easier (at least for me)
-    public Stack<String> unloadRecursively(String doNotLoad, Plugin plugin,
-            Stack<String> pluginFiles)
-    {
+    public Stack<String> unloadRecursively(final String doNotLoad, final Plugin plugin, final Stack<String> pluginFiles) {
 
-        if (!plugin.getName().equals(doNotLoad))
-        {
-            File file = getFile((JavaPlugin) plugin);
+        if (!plugin.getName().equals(doNotLoad)) {
+            final File file = getFile((JavaPlugin) plugin);
             pluginFiles.push(file.getName());
         }
 
-        PluginManager pm = Bukkit.getPluginManager();
-        for (Plugin p : pm.getPlugins())
-        {
-            List<String> depend = p.getDescription().getDepend();
-            if (depend != null)
-            {
-                for (String s : depend)
-                {
-                    if (s.equals(plugin.getName()))
-                    {
+        final PluginManager pm = Bukkit.getPluginManager();
+        for (final Plugin p : pm.getPlugins()) {
+            final List<String> depend = p.getDescription().getDepend();
+            if (depend != null) {
+                for (final String s : depend) {
+                    if (s.equals(plugin.getName())) {
                         unloadRecursively(doNotLoad, p, pluginFiles);
                     }
                 }
             }
 
-            List<String> softDepend = p.getDescription().getSoftDepend();
-            if (softDepend != null)
-            {
-                for (String s : softDepend)
-                {
-                    if (s.equals(plugin.getName()))
-                    {
+            final List<String> softDepend = p.getDescription().getSoftDepend();
+            if (softDepend != null) {
+                for (final String s : softDepend) {
+                    if (s.equals(plugin.getName())) {
                         unloadRecursively(doNotLoad, p, pluginFiles);
                     }
                 }
             }
         }
 
-        if (unloadPlugin(plugin))
-        {
+        if (unloadPlugin(plugin)) {
 
-            List<String> depend = plugin.getDescription().getDepend();
-            if (depend != null)
-            {
-                for (String s : depend)
-                {
-                    Plugin p = pm.getPlugin(s);
-                    if (p != null)
-                    {
+            final List<String> depend = plugin.getDescription().getDepend();
+            if (depend != null) {
+                for (final String s : depend) {
+                    final Plugin p = pm.getPlugin(s);
+                    if (p != null) {
                         unloadRecursively(doNotLoad, p, pluginFiles);
                     }
                 }
             }
 
-            List<String> softDepend = plugin.getDescription().getSoftDepend();
-            if (softDepend != null)
-            {
-                for (String s : softDepend)
-                {
-                    Plugin p = pm.getPlugin(s);
-                    if (p != null)
-                    {
+            final List<String> softDepend = plugin.getDescription().getSoftDepend();
+            if (softDepend != null) {
+                for (final String s : softDepend) {
+                    final Plugin p = pm.getPlugin(s);
+                    if (p != null) {
                         unloadRecursively(doNotLoad, p, pluginFiles);
                     }
                 }
@@ -554,38 +393,63 @@ public class PluginControl
         return pluginFiles;
     }
 
-    public boolean unregisterCommand(JavaPlugin plugin, String command)
-    {
-        PluginCommand cmd = getCommand(plugin, command);
-        if (cmd == null)
-        {
+    public boolean unregisterCommand(final JavaPlugin plugin, final String command) {
+        final PluginCommand cmd = getCommand(plugin, command);
+        if (cmd == null) {
             return false;
         }
 
-        synchronized (scm)
-        {
+        synchronized (scm) {
             cmd.unregister(scm);
-            if (kc.get(cmd.getName()) == cmd)
-            {
+            if (kc.get(cmd.getName()) == cmd) {
                 kc.remove(cmd.getName());
-            }
-            else
-            {
+            } else {
                 kc.remove(plugin.getName() + ":" + cmd.getName());
             }
-            for (String s : cmd.getAliases())
-            {
-                if (kc.get(s) == cmd)
-                {
+            for (final String s : cmd.getAliases()) {
+                if (kc.get(s) == cmd) {
                     kc.remove(s);
-                }
-                else
-                {
+                } else {
                     kc.remove(plugin.getName() + ":" + s);
                 }
             }
         }
 
         return true;
+    }
+
+    void cleanup() {
+        scm = null;
+        kc = null;
+    }
+
+    private void addToConfig(final String pName, final String cmdName) {
+        if (!cmdConfig.contains(pName)) {
+            cmdConfig.set(pName, cmdName);
+        } else {
+            final StringBuilder sb = new StringBuilder();
+
+            for (final String s : cmdConfig.getStringList(pName, null)) {
+                if (s.equals(cmdName)) {
+                    return;
+                }
+                sb.append(s).append(',');
+            }
+            sb.append(cmdName);
+            cmdConfig.set(pName, sb.toString());
+        }
+
+        for (final String key : cmdConfig.getKeySet()) {
+            if (key.equals(pName)) {
+                continue;
+            }
+
+            final List<String> values = Arrays.asList(cmdConfig.getStringList(key, null));
+            for (final String s : values.toArray(new String[0])) {
+                if (cmdName.equalsIgnoreCase(s)) {
+                    values.remove(s);
+                }
+            }
+        }
     }
 }
