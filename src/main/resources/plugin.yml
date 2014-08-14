@@ -1,7 +1,8 @@
 name: PluginManager
 version: 1.2.1
-author: Technius
-website: technius.co
+author: obnoxint
+authors: [obnoxint, Technius]
+website: http://dev.bukkit.org/bukkit-plugins/pm-pluginmanager/
 description: A plugin used for managing plugins
 soft-depends: [PerWorldPlugins, MCore]
 main: co.technius.PluginManager.PluginManagerPlugin
