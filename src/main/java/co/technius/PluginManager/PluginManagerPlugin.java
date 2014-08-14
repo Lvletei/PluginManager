@@ -1,9 +1,9 @@
 package co.technius.PluginManager;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -45,41 +45,16 @@ public class PluginManagerPlugin extends JavaPlugin {
         cmdConfig = new StringConfig(new File(getDataFolder(), "commands.cfg"));
         final File fconfig = new File(getDataFolder(), "config.txt");
         config = new StringConfig(fconfig);
-        try {
+        try (InputStream is = getClass().getResourceAsStream("/defaultconfig.txt");){
             cmdConfig.start();
             cmdConfig.load();
             if (!fconfig.exists()) {
-                InputStream is = null;
-                FileOutputStream out = null;
-                try {
-                    is = getClass().getResourceAsStream("/defaultconfig.txt");
-                    out = new FileOutputStream(fconfig);
-                    final byte[] buf = new byte[1024];
-                    int len;
-                    while ((len = is.read(buf)) != -1) {
-                        out.write(buf, 0, len);
-                    }
-                    out.flush();
-                } catch (final IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    try
-                    {
-                        if (is != null) {
-                            is.close();
-                        }
-                        if (out != null) {
-                            out.close();
-                        }
-                    } catch (final Exception e) {
-                        e.printStackTrace();
-                    }
-                }
+                Files.copy(is, fconfig.toPath());
             }
             config.load();
-        } catch (final IOException e1) {
+        } catch (final IOException e) {
             getLogger().severe("Failed to initalize config!");
-            e1.printStackTrace();
+            e.printStackTrace();
         }
 
         try {
