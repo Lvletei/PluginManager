@@ -1,5 +1,9 @@
 package co.technius.PluginManager;
 
+import static java.lang.String.format;
+import static net.obnoxint.mcdev.pluginmanager.Messages.getMessage;
+import static net.obnoxint.mcdev.pluginmanager.Messages.getMessageFormatted;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -50,24 +54,24 @@ public class PMCommandExecutor implements CommandExecutor {
     private final Server server;
 
     private final CmdDesc[] help = {
-            new CmdDesc("plm enable <plugin>", "Enables a plugin", "pluginmanager.enable"),
-            new CmdDesc("plm disable <plugin>", "Disables a plugin", "pluginmanager.disable"),
-            new CmdDesc("plm load <plugin>", "Loads a plugin(Must use a file name, no .jar needed)", "pluginmanager.load"),
-            new CmdDesc("plm unload <plugin>", "Unloads a plugin", "pluginmanager.unload"),
-            new CmdDesc("plm reload <plugin>", "Unloads and loads a plugin", "pluginmanager.reload"),
-            new CmdDesc("plm sreload <plugin>", "Disables and enables a plugin", "pluginmanager.softreload"),
-            new CmdDesc("plm show <plugin>", "Shows detailed information about a plugin", "pluginmanager.show"),
-            new CmdDesc("plm list [options]", "Lists plugins with specified options", "pluginmanager.list"),
-            new CmdDesc("plm cmd", "Shows command manipulation menu", null),
-            new CmdDesc("plm plug-get", "Shows BukkitDev lookup menu", null) };
+            new CmdDesc("plm enable <plugin>", getMessage("cmd.desc.enable"), "pluginmanager.enable"),
+            new CmdDesc("plm disable <plugin>", getMessage("cmd.desc.disable"), "pluginmanager.disable"),
+            new CmdDesc("plm load <plugin>", getMessage("cmd.desc.load"), "pluginmanager.load"),
+            new CmdDesc("plm unload <plugin>", getMessage("cmd.desc.unload"), "pluginmanager.unload"),
+            new CmdDesc("plm reload <plugin>", getMessage("cmd.desc.reload"), "pluginmanager.reload"),
+            new CmdDesc("plm sreload <plugin>", getMessage("cmd.desc.sreload"), "pluginmanager.softreload"),
+            new CmdDesc("plm show <plugin>", getMessage("cmd.desc.show"), "pluginmanager.show"),
+            new CmdDesc("plm list [options]", getMessage("cmd.desc.list"), "pluginmanager.list"),
+            new CmdDesc("plm cmd", getMessage("cmd.desc.cmd"), null),
+            new CmdDesc("plm plug-get", getMessage("cmd.desc.plugget"), null) };
 
     private final CmdDesc[] pluggethelp = {
-            new CmdDesc("plm plug-get search <name>", "Searches for a plugin on BukkitDev", "pluginmanager.plugget.search"),
-            new CmdDesc("plm plug-get check <slug>", "Checks if an update is available", "pluginmanager.plugget.check") };
+            new CmdDesc("plm plug-get search <name>", getMessage("cmd.desc.plugget.search"), "pluginmanager.plugget.search"),
+            new CmdDesc("plm plug-get check <slug>", getMessage("cmd.desc.plugget.check"), "pluginmanager.plugget.check") };
 
     private final CmdDesc[] cmdhelp = {
-            new CmdDesc("plm cmd unregister <command> <plugin>", "Unregisters a command", "pluginmanager.cmd.unregister"),
-            new CmdDesc("plm cmd priority <command> <plugin>", "Elevates command priority to highest", "pluginmanager.cmd.priority") };
+            new CmdDesc("plm cmd unregister <command> <plugin>", getMessage("cmd.desc.cmd.unregister"), "pluginmanager.cmd.unregister"),
+            new CmdDesc("plm cmd priority <command> <plugin>", getMessage("cmd.desc.cmd.priority"), "pluginmanager.cmd.priority") };
 
     PMCommandExecutor(final PluginManagerPlugin plugin, final PluginControl control) {
         this.pluginMngr = plugin;
@@ -77,72 +81,68 @@ public class PMCommandExecutor implements CommandExecutor {
 
     public boolean cmdCmd(final CommandSender sender, final String[] args) {
         if (args.length < 2) {
-            return helpCmd(sender, args, "Command Help", cmdhelp);
+            return helpCmd(sender, args, getMessage("cmd.fb.neu.cmd.caption"), cmdhelp);
         } else if (args[1].equalsIgnoreCase("unregister")) {
             if (noPerm(sender, "pluginmanager.cmd.unregister")) {
                 return true;
             }
 
             if (args.length < 4) {
-                sender.sendMessage(ChatColor.RED + "Usage: /plm cmd unregister <command> <plugin>");
+                sender.sendMessage(getMessage("cmd.fb.neg.cmd.usage.unregister"));
                 return true;
             }
 
             final String pName = StringUtils.getStringOfArray(args, 3);
             final Plugin plugin = server.getPluginManager().getPlugin(pName);
             if (plugin == null) {
-                sender.sendMessage(ChatColor.RED + "No such plugin: " + pName);
+                sender.sendMessage(getMessageFormatted("cmd.fb.neg.noSuchPlugin", pName));
                 return true;
             }
 
             if (!control.hasCommand((JavaPlugin) plugin, args[2])) {
-                sender.sendMessage(ChatColor.RED + plugin.getDescription().getName()
-                        + " doesn't have the command " + args[2] + "!");
+                sender.sendMessage(getMessageFormatted("cmd.fb.neg.cmd.noCommand", plugin.getDescription().getName(), args[2]));
                 return true;
             }
             control.unregisterCommand((JavaPlugin) plugin, args[2]);
-            sender.sendMessage(ChatColor.GREEN + args[2] + " unregistered!");
+            sender.sendMessage(getMessageFormatted("cmd.fb.pos.cmd.unregistered", args[2]));
         } else if (args[1].equalsIgnoreCase("priority")) {
             if (noPerm(sender, "pluginmanager.cmd.priority")) {
                 return true;
             }
 
             if (args.length < 4) {
-                sender.sendMessage(ChatColor.RED + "Usage: /plm cmd priority <command> <plugin>");
+                sender.sendMessage(getMessage("cmd.fb.neg.cmd.usage.priority"));
                 return true;
             }
 
             final String pName = StringUtils.getStringOfArray(args, 3);
             final JavaPlugin plugin = (JavaPlugin) server.getPluginManager().getPlugin(pName);
             if (plugin == null) {
-                sender.sendMessage(ChatColor.RED + "No such plugin: " + pName);
+                sender.sendMessage(getMessageFormatted("cmd.fb.neg.noSuchPlugin", pName));
                 return true;
             }
 
             if (!control.hasCommand(plugin, args[2])) {
-                sender.sendMessage(ChatColor.RED + plugin.getDescription().getName()
-                        + " doesn't have the command " + args[2] + "!");
+                sender.sendMessage(getMessageFormatted("cmd.fb.neg.cmd.noCommand", plugin.getDescription().getName(), args[2]));
                 return true;
             }
 
             if (control.isTopPriority(plugin, args[2])) {
-                sender.sendMessage(ChatColor.RED + args[2] + " command of "
-                        + plugin.getDescription().getName() + " is already top priority!");
+                sender.sendMessage(getMessageFormatted("cmd.fb.neg.cmd.priority.alreadyHighest", args[2], plugin.getDescription().getName()));
                 return true;
             }
 
             final PluginCommand pcmd = control.getCommand(plugin, args[2]);
             control.changePriority(plugin, pcmd, false);
-            sender.sendMessage(ChatColor.GREEN + "Priority of " + plugin.getDescription().getName()
-                    + "'s " + pcmd.getName() + " command set to highest!");
+            sender.sendMessage(getMessageFormatted("cmd.fb.pos.cmd.priority.set", pcmd.getName(), plugin.getDescription().getName()));
         } else {
-            return msg(sender, ChatColor.GOLD + "Command unrecognized.  Type " + ChatColor.AQUA + "/plm cmd" + ChatColor.GOLD + " for help");
+            return msg(sender, getMessage("cmd.fb.neg.cmd.noSuchCommand"));
         }
         return true;
     }
 
     public void noPerm(final CommandSender sender) {
-        sender.sendMessage(ChatColor.RED + "You are not allowed to use this command!");
+        sender.sendMessage(getMessage("cmd.fb.neg.noPermission"));
     }
 
     public boolean noPerm(final CommandSender sender, final String perm) {
@@ -179,11 +179,10 @@ public class PMCommandExecutor implements CommandExecutor {
             case "plug-get":
                 return plugGetCmd(sender, args);
             default:
-                return msg(sender, ChatColor.GOLD + "Command unrecognized.  Type "
-                        + ChatColor.AQUA + "/plm" + ChatColor.GOLD + " for help");
+                return msg(sender, getMessage("cmd.fb.neg.noSuchCommand"));
             }
         } else {
-            helpCmd(sender, args, "PluginManager", help);
+            helpCmd(sender, args, getMessage("cmd.fb.neu.title"), help);
         }
         return true;
     }
@@ -205,12 +204,12 @@ public class PMCommandExecutor implements CommandExecutor {
         final String pName = StringUtils.getStringOfArray(args, 1);
         final Plugin plugin = server.getPluginManager().getPlugin(pName);
         if (plugin == null) {
-            sender.sendMessage(ChatColor.RED + "No such plugin: " + pName);
+            sender.sendMessage(getMessageFormatted("cmd.fb.neg.noSuchPlugin", pName));
         } else if (!plugin.isEnabled()) {
-            sender.sendMessage(ChatColor.RED + pName + " is already disabled!");
+            sender.sendMessage(getMessageFormatted("cmd.fb.neg.alreadyDisabled", pName));
         } else {
             control.disablePlugin(plugin);
-            sender.sendMessage(ChatColor.GREEN + pName + " disabled!");
+            sender.sendMessage(getMessageFormatted("cmd.fb.pos.disabled", pName));
         }
         return true;
     }
@@ -227,12 +226,12 @@ public class PMCommandExecutor implements CommandExecutor {
         final String pName = StringUtils.getStringOfArray(args, 1);
         final Plugin plugin = server.getPluginManager().getPlugin(pName);
         if (plugin == null) {
-            sender.sendMessage(ChatColor.RED + "No such plugin: " + pName);
+            sender.sendMessage(getMessageFormatted("cmd.fb.neg.noSuchPlugin", pName));
         } else if (plugin.isEnabled()) {
-            sender.sendMessage(ChatColor.RED + pName + " is already enabled!");
+            sender.sendMessage(getMessageFormatted("cmd.fb.neg.alreadyEnabled", pName));
         } else {
             control.enablePlugin(plugin);
-            sender.sendMessage(ChatColor.GREEN + pName + " enabled!");
+            sender.sendMessage(getMessageFormatted("cmd.fb.pos.enabled", pName));
         }
         return true;
     }
@@ -243,7 +242,7 @@ public class PMCommandExecutor implements CommandExecutor {
             try {
                 page = Integer.parseInt(args[1]);
             } catch (final NumberFormatException nfe) {
-                return msg(sender, ChatColor.RED + "\"" + args[1] + "\" is not a valid number");
+                return msg(sender, getMessageFormatted("cmd.fb.neg.nan", args[1]));
             }
         }
 
@@ -271,8 +270,7 @@ public class PMCommandExecutor implements CommandExecutor {
             cmda++;
         }
 
-        sender.sendMessage(ChatColor.GOLD + title + " Help (" + ChatColor.AQUA + page
-                + ChatColor.GOLD + "/" + ChatColor.AQUA + max + ChatColor.GOLD + ")");
+        sender.sendMessage(getMessageFormatted("cmd.fb.neu.help.caption", title, page, max));
         for (final String s : d) {
             sender.sendMessage(s);
         }
@@ -309,11 +307,7 @@ public class PMCommandExecutor implements CommandExecutor {
         }
 
         if (options) {
-            sender.sendMessage(ChatColor.YELLOW + "List options");
-            sender.sendMessage(ChatColor.YELLOW + "-v" + ChatColor.GOLD + " - Shows plugins with versions");
-            sender.sendMessage(ChatColor.YELLOW + "-o" + ChatColor.GOLD + " - Lists options");
-            sender.sendMessage(ChatColor.YELLOW + "-a" + ChatColor.GOLD + " - Lists plugins in alphabetical order");
-            sender.sendMessage(ChatColor.YELLOW + "-s:[plugin]" + ChatColor.GOLD + " - List plugins that only contain the name");
+            sender.sendMessage(getMessage("cmd.fb.neu.list.options").split("\n"));
             return true;
         }
 
@@ -361,10 +355,10 @@ public class PMCommandExecutor implements CommandExecutor {
         }
 
         if (!pes.isEmpty()) {
-            sender.sendMessage(ChatColor.YELLOW + "Enabled plugins: " + ChatColor.GREEN + pes);
+            sender.sendMessage(getMessageFormatted("cmd.fb.pos.list.enabled", pes));
         }
         if (!pds.isEmpty()) {
-            sender.sendMessage(ChatColor.YELLOW + "Disabled plugins: " + ChatColor.RED + pds);
+            sender.sendMessage(getMessageFormatted("cmd.fb.pos.list.disabled", pds));
         }
 
         return true;
@@ -383,27 +377,27 @@ public class PMCommandExecutor implements CommandExecutor {
         final String fname = StringUtils.getStringOfArray(args, 1);
         final File f = new File("plugins" + File.separator + fname + ".jar");
         if (!f.exists()) {
-            sender.sendMessage(ChatColor.RED + "No such file: " + fname + ".jar");
+            sender.sendMessage(getMessageFormatted("cmd.fb.neg.noSuchFile", fname));
             return true;
         }
 
         final PluginDescriptionFile pdf = control.getDescriptionFromJar(f);
         if (pdf == null) {
-            sender.sendMessage(ChatColor.RED + "Jar file doesn't contain a plugin.yml: " + f.getName());
+            sender.sendMessage(getMessageFormatted("cmd.fb.neg.noPDF", f.getName()));
             return true;
         }
 
         if (server.getPluginManager().getPlugin(pdf.getName()) != null) {
-            sender.sendMessage(ChatColor.RED + pdf.getName() + " is already loaded!");
+            sender.sendMessage(getMessageFormatted("cmd.fb.neg.alreadyLoaded", pdf.getName()));
             return true;
         }
 
         Plugin p = null;
         if ((p = control.loadPlugin(fname)) != null) {
             server.getPluginManager().enablePlugin(p);
-            sender.sendMessage(ChatColor.GREEN + p.getDescription().getName() + " " + p.getDescription().getVersion() + " loaded successfully!");
+            sender.sendMessage(getMessageFormatted("cmd.fb.pos.loaded", p.getDescription().getName(), p.getDescription().getVersion()));
         } else {
-            sender.sendMessage(ChatColor.RED + "Failed to load " + args[1] + "!" + (sender instanceof org.bukkit.entity.Player ? "Check console for details!" : ""));
+            sender.sendMessage(getMessageFormatted("cmd.fb.neg.loadFailed", args[1]));
         }
 
         return true;
@@ -429,47 +423,45 @@ public class PMCommandExecutor implements CommandExecutor {
             @Override
             public void run() {
                 if (args[2].equalsIgnoreCase("pluginmanager")) {
-                    sender.sendMessage(ChatColor.RED + "Are you sure you have the right plugin?"
-                            + " This plugin's slug is pm-pluginmanager.");
+                    sender.sendMessage(getMessage("cmf.fb.neg.plugget.wrongPMSlug"));
                 }
                 try {
                     final VersionInformation ver = DBOUtilities.getLatestVersion(args[2].toLowerCase());
                     if (ver == null) {
-                        sender.sendMessage(ChatColor.RED + "\"" + args[2] + "\" does not exist!");
+                        sender.sendMessage(getMessageFormatted("cmd.fb.neg.plugget.notFound", args[2]));
                     } else if (ver.version == null) {
-                        sender.sendMessage(ChatColor.YELLOW + "No version of the plugin exists on BukkitDev yet.");
+                        sender.sendMessage(getMessage("cmd.fb.neg.plugget.noFile"));
                     } else {
                         final VersionInfo info = DBOUtilities.isUpToDate(Bukkit.getPluginManager().getPlugin(ver.pluginname), ver);
                         switch (info) {
                         case LATEST:
-                            sender.sendMessage(ChatColor.GREEN + "You are using the latest version of '" + ver.pluginname + "'.");
-                            break;
+                            sender.sendMessage(getMessageFormatted("cmd.fb.pos.plugget.upToDate", ver.pluginname));
+                        break;
 
                         case OLD:
-                            sender.sendMessage(ChatColor.GREEN + "There is a newer version of '" + ver.pluginname + "' available: " + ver.version + "");
-                            break;
+                            sender.sendMessage(getMessageFormatted("cmd.fb.pos.plugget.newVersion", ver.pluginname, ver.version));
+                        break;
 
                         case NOT_IN_USE:
-                            sender.sendMessage(ChatColor.RED + "You are not using '" + ver.pluginname + "' on your server!");
-                            break;
+                            sender.sendMessage(getMessageFormatted("cmd.fb.neg.plugget.notInstalled", ver.pluginname));
+                        break;
 
                         case UNKNOWN:
-                            sender.sendMessage(ChatColor.RED + "The '" + ver.version + "'version of '" + ver.pluginname + "' is"
-                                    + " abnormal; please check the version manually on BukkitDev.");
-                            break;
+                            sender.sendMessage(getMessageFormatted("cmd.fb.neg.plugget.abnormalVersion", ver.version, ver.pluginname));
+                        break;
 
                         default:
-                            sender.sendMessage(ChatColor.RED + "Failed to check for updates for " + args[2] + "!" + (sender instanceof Player ? " Check console for details!" : ""));
-                            break;
+                            sender.sendMessage(getMessageFormatted("cmd.fb.neg.plugget.checkFailed", args[2]));
+                        break;
 
                         }
                     }
 
                 } catch (final MalformedURLException e) {
-                    sender.sendMessage(ChatColor.RED + "Failed to check for updates for " + args[2] + "!" + (sender instanceof Player ? " Check console for details!" : ""));
+                    sender.sendMessage(getMessageFormatted("cmd.fb.neg.plugget.checkFailed", args[2]));
                     e.printStackTrace();
                 } catch (final IOException e) {
-                    sender.sendMessage(ChatColor.RED + "Failed to check for updates for " + args[2] + "!" + (sender instanceof Player ? " Check console for details!" : ""));
+                    sender.sendMessage(getMessageFormatted("cmd.fb.neg.plugget.checkFailed", args[2]));
                     e.printStackTrace();
                 }
             }
@@ -480,14 +472,14 @@ public class PMCommandExecutor implements CommandExecutor {
 
     private boolean plugGetCmd(final CommandSender sender, final String[] args) {
         if (args.length == 1) {
-            return helpCmd(sender, args, "Updater Help", pluggethelp);
+            return helpCmd(sender, args, getMessage("cmd.fb.neu.plugget.caption"), pluggethelp);
         } else {
             if (args[1].equalsIgnoreCase("search")) {
                 plugGetSearchCmd(sender, args);
             } else if (args[1].equalsIgnoreCase("check")) {
                 plugGetCheckCmd(sender, args);
             } else {
-                return msg(sender, ChatColor.GOLD + "Command unrecognized.  Type " + ChatColor.AQUA + "/plm plug-get" + ChatColor.GOLD + " for help");
+                return msg(sender, getMessage("cmd.fb.neg.plugget.noSuchCommand"));
             }
         }
         return true;
@@ -509,13 +501,13 @@ public class PMCommandExecutor implements CommandExecutor {
                 final List<SlugInformation> slugInfo = DBOUtilities.getSlugInformationList(args[2]);
 
                 if (slugInfo.size() == 0) {
-                    sender.sendMessage(ChatColor.RED + "No results found for " + args[2] + "!");
+                    sender.sendMessage(getMessageFormatted("cmd.fb.neg.plugget.noResults", args[2]));
                 } else {
-                    sender.sendMessage(ChatColor.AQUA + String.format("|----BukkitDev Plugin Search: %s----|", ChatColor.GREEN + args[2] + ChatColor.AQUA));
+                    sender.sendMessage(ChatColor.AQUA + format("|----BukkitDev Plugin Search: %s----|", ChatColor.GREEN + args[2] + ChatColor.AQUA));
                     sender.sendMessage(ChatColor.GOLD + "|----Plugin name: DBO Slug----|");
 
                     for (final SlugInformation si : slugInfo) {
-                        sender.sendMessage(ChatColor.GOLD + String.format("%1$s: %2$s", si.getPluginName(), si.getSlug()));
+                        sender.sendMessage(ChatColor.GOLD + format("%1$s: %2$s", si.getPluginName(), si.getSlug()));
                     }
                 }
             }
@@ -538,12 +530,12 @@ public class PMCommandExecutor implements CommandExecutor {
         final String pName = StringUtils.getStringOfArray(args, 1);
         final Plugin plugin = server.getPluginManager().getPlugin(pName);
         if (plugin == null) {
-            sender.sendMessage(ChatColor.RED + "No such plugin: " + pName);
+            sender.sendMessage(getMessageFormatted("cmd.fb.neg.noSuchPlugin", pName));
         } else {
             final File file = control.getFile((JavaPlugin) plugin);
             JavaPlugin loaded = null;
             if (file == null) {
-                sender.sendMessage(ChatColor.RED + plugin.getName() + "'s jar file is missing!");
+                sender.sendMessage(getMessageFormatted("cmd.fb.neg.missingJar", plugin.getName()));
                 return true;
             }
 
@@ -553,13 +545,13 @@ public class PMCommandExecutor implements CommandExecutor {
             pluginMngr.setUnload(t);
 
             if (!control.unloadPlugin(plugin)) {
-                sender.sendMessage(ChatColor.RED + "An error occurred while unloading " + pName + "!");
+                sender.sendMessage(getMessageFormatted("cmd.fb.neg.unloadError", pName));
             } else if ((loaded = (JavaPlugin) control.loadPlugin(fname)) == null) {
-                sender.sendMessage(ChatColor.RED + "Failed to load " + fname + "!" + (sender != server.getConsoleSender() ? "Check console for details!" : ""));
+                sender.sendMessage(getMessageFormatted("cmd.fb.neg.unloadFailed", fname));
             }
 
             server.getPluginManager().enablePlugin(loaded);
-            sender.sendMessage(ChatColor.GREEN + loaded.getDescription().getName() + " reloaded successfully.");
+            sender.sendMessage(getMessageFormatted("cmd.fb.pos.reloadSuccess", loaded.getDescription().getName()));
 
             if (t) {
                 control.cleanup();
@@ -582,7 +574,7 @@ public class PMCommandExecutor implements CommandExecutor {
         final String pName = StringUtils.getStringOfArray(args, 1);
         final Plugin plugin = server.getPluginManager().getPlugin(pName);
         if (plugin == null) {
-            sender.sendMessage(ChatColor.RED + "No such plugin: " + pName);
+            sender.sendMessage(getMessageFormatted("cmd.fb.neg.noSuchPlugin", pName));
         } else {
             final File file = control.getFile((JavaPlugin) plugin);
             sender.sendMessage(ChatColor.AQUA + "|----Plugin information: " + ChatColor.GREEN + plugin.getName() + ChatColor.AQUA + "----|");
@@ -632,14 +624,13 @@ public class PMCommandExecutor implements CommandExecutor {
         final String pName = StringUtils.getStringOfArray(args, 1);
         final Plugin plugin = server.getPluginManager().getPlugin(pName);
         if (plugin == null) {
-            sender.sendMessage(ChatColor.RED + "No such plugin: " + pName);
+            sender.sendMessage(getMessageFormatted("cmd.fb.neg.noSuchPlugin", pName));
         } else if (!plugin.isEnabled()) {
-            sender.sendMessage(ChatColor.RED + "The plugin is disabled!");
+            sender.sendMessage(getMessage("cmd.fb.net.pluginDisabled"));
         } else {
             server.getPluginManager().disablePlugin(plugin);
             server.getPluginManager().enablePlugin(plugin);
-            sender.sendMessage(ChatColor.GREEN + plugin.getDescription().getName() + " "
-                    + plugin.getDescription().getVersion() + " soft reloaded successfully.");
+            sender.sendMessage(getMessageFormatted("cmd.fb.pos.sreloadSuccess", plugin.getDescription().getName(), plugin.getDescription().getVersion()));
         }
 
         return true;
@@ -658,15 +649,15 @@ public class PMCommandExecutor implements CommandExecutor {
         final String pName = StringUtils.getStringOfArray(args, 1);
         final Plugin plugin = server.getPluginManager().getPlugin(pName);
         if (plugin == null) {
-            sender.sendMessage(ChatColor.RED + "No such plugin: " + args[1]);
+            sender.sendMessage(getMessageFormatted("cmd.fb.neg.noSuchPlugin", pName));
         } else {
             final boolean t = plugin == this;
             pluginMngr.setUnload(t);
             // if (control.unloadPlugin(plugin)) {
             if (control.unloadRecursively(plugin)) {
-                sender.sendMessage(ChatColor.GREEN + pName + " " + plugin.getDescription().getVersion() + " successfully unloaded!");
+                sender.sendMessage(getMessageFormatted("cmd.fb.pos.unloadSuccess", pName, plugin.getDescription().getVersion()));
             } else {
-                sender.sendMessage(ChatColor.RED + "Failed to unload " + pName + "!" + (sender instanceof org.bukkit.entity.Player ? "Check console for details!" : ""));
+                sender.sendMessage(getMessageFormatted("cmd.fb.neg.unloadFailed", pName));
             }
 
             if (t) {
