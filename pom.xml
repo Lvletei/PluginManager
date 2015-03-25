@@ -2,33 +2,26 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>co.technius</groupId>
   <artifactId>PluginManager</artifactId>
-  <version>1.2.2</version>
+  <version>1.2.3-SNAPSHOT</version>
   <name>PluginManager</name>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   
-  <dependencies>
-  	<dependency>
-  		<groupId>org.bukkit</groupId>
-  		<artifactId>bukkit</artifactId>
-  		<version>1.7.10-R0.1-SNAPSHOT</version>
-  	</dependency>
-  	<dependency>
-  	  <groupId>me.Incomprehendable</groupId>
-  	  <artifactId>WorldPlugins</artifactId>
-  	  <version>1.1.1</version>
-  	  <scope>system</scope>
-  	  <systemPath>${basedir}/lib/PerWorldPlugins.jar</systemPath>
-  	</dependency>
-  </dependencies>
+    <dependencies>
+   		<dependency>
+   			<groupId>org.bukkit</groupId>
+   			<artifactId>bukkit</artifactId>
+   			<version>1.8.3-R0.1-SNAPSHOT</version>
+   		</dependency>
+   </dependencies>
   
   <repositories>
-    <repository>
-      <id>bukkit-repo</id>
-      <url>http://repo.bukkit.org/content/groups/public/</url>
-    </repository>
-  </repositories>
+       <repository>
+           <id>bukkit-repo</id>
+           <url>http://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+       </repository>
+   </repositories>
   
   <build>
     <resources>

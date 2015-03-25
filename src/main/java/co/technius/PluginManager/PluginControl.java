@@ -13,9 +13,6 @@ import java.util.Stack;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-import me.Incomprehendable.WorldPlugins.FakePluginManager;
-import me.Incomprehendable.WorldPlugins.FakeSimpleCommandMap;
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommand;
@@ -52,7 +49,7 @@ public class PluginControl {
         final PluginManager bpm = Bukkit.getServer().getPluginManager();
 
         if (!(bpm instanceof SimplePluginManager)) {
-            if (Bukkit.getPluginManager().getPlugin("PerWorldPlugins") == null || !(bpm instanceof FakePluginManager)) {
+            if (Bukkit.getPluginManager().getPlugin("PerWorldPlugins") == null ) {
                 throw new PMStartupException("Unknown Bukkit plugin system detected: " + bpm.getClass().getName());
             }
         }
@@ -63,7 +60,7 @@ public class PluginControl {
         scmF.setAccessible(true);
         scm = (SimpleCommandMap) scmF.get(bpm);
 
-        if (!(scm instanceof SimpleCommandMap) && !(scm instanceof FakeSimpleCommandMap)) {
+        if (!(scm instanceof SimpleCommandMap)) {
             throw new PMStartupException("Unsupported Bukkit command system detected: " + scm.getClass().getName());
         }
 
