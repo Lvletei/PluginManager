@@ -527,7 +527,8 @@ public class PMCommandExecutor implements CommandExecutor {
             return usage(sender, "plm reload <plugin>");
         }
 
-        final String pName = StringUtils.getStringOfArray(args, 1);
+//		final String pName = StringUtils.getStringOfArray(args, 1);
+        final String pName = args[1];
         final Plugin plugin = server.getPluginManager().getPlugin(pName);
         if (plugin == null) {
             sender.sendMessage(getMessageFormatted("cmd.fb.neg.noSuchPlugin", pName));
@@ -646,12 +647,15 @@ public class PMCommandExecutor implements CommandExecutor {
             return usage(sender, "plm unload <plugin>");
         }
 
-        final String pName = StringUtils.getStringOfArray(args, 1);
+//      final String pName = StringUtils.getStringOfArray(args, 1);
+        final String pName = args[1];
+        
         final Plugin plugin = server.getPluginManager().getPlugin(pName);
         if (plugin == null) {
             sender.sendMessage(getMessageFormatted("cmd.fb.neg.noSuchPlugin", pName));
         } else {
-            final boolean t = plugin == this;
+            //final boolean t = plugin == this;
+            final boolean t = plugin.equals(pluginMngr);
             pluginMngr.setUnload(t);
             // if (control.unloadPlugin(plugin)) {
             if (control.unloadRecursively(plugin)) {

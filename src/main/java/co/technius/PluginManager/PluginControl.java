@@ -5,11 +5,11 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
@@ -22,7 +22,7 @@ import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.SimplePluginManager;
+//import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
@@ -47,12 +47,13 @@ public class PluginControl {
     public PluginControl(final StringConfig cmdConfig) throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, PMStartupException {
         this.cmdConfig = cmdConfig;
         final PluginManager bpm = Bukkit.getServer().getPluginManager();
-
-        if (!(bpm instanceof SimplePluginManager)) {
-            if (Bukkit.getPluginManager().getPlugin("PerWorldPlugins") == null ) {
-                throw new PMStartupException("Unknown Bukkit plugin system detected: " + bpm.getClass().getName());
-            }
-        }
+        
+// PerWorldPlugins is outdated. Will re-examine later.
+//        if (!(bpm instanceof SimplePluginManager)) {
+//            if (Bukkit.getPluginManager().getPlugin("PerWorldPlugins") == null ) {
+//                throw new PMStartupException("Unknown Bukkit plugin system detected: " + bpm.getClass().getName());
+//            }
+//        }
 
         // SimplePluginManager spm = (SimplePluginManager) bpm;
         Field scmF;
@@ -121,6 +122,14 @@ public class PluginControl {
 
     public void enablePlugin(final Plugin plugin) {
         Bukkit.getServer().getPluginManager().enablePlugin(plugin);
+    }
+    
+    public void enablePlugin( final Plugin[] plugin )
+    {
+    	for( int i = 0; i < plugin.length; i++ )
+    	{
+    		Bukkit.getServer( ).getPluginManager( ).enablePlugin( plugin[i] );
+    	}
     }
 
     public PluginCommand getCommand(final JavaPlugin plugin, final String command) {
@@ -208,6 +217,35 @@ public class PluginControl {
                 plugin.onLoad();
             } catch (final Exception e) {
                 System.out.println("Failed to call 'onLoad()' for plugin '" + plugin.getName() + "'");
+                e.printStackTrace();
+            }
+            return plugin;
+        } catch (InvalidPluginException | InvalidDescriptionException | UnknownDependencyException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+        
+    public Plugin[] loadPlugin(final ArrayList<String> pluginFiles ) {
+        Plugin[] plugin = new Plugin[pluginFiles.size( )];
+        File[] plugins = new File[pluginFiles.size( )];
+        for( int i = 0; i < pluginFiles.size( ); i++ )
+        {
+        	plugins[i] = new File("plugins" + File.separator + pluginFiles.get(i) + (pluginFiles.get(i).endsWith(".jar") ? "" : ".jar"));
+        }
+        try {
+        	 for( int i = 0; i < pluginFiles.size( ); i++ )
+             {
+        		 plugin[i] = Bukkit.getPluginManager( ).loadPlugin( plugins[i] );
+             }
+            try {
+            	 for( int i = 0; i < pluginFiles.size( ); i++ )
+                 {
+            		 plugin[i].onLoad();
+            		 pluginFiles.remove( i );
+                 }
+            } catch (final Exception e) {
+               // System.out.println("Failed to call 'onLoad()' for plugin '" + plugin.getName() + "'");
                 e.printStackTrace();
             }
             return plugin;
@@ -322,25 +360,27 @@ public class PluginControl {
         closeClassLoader(plugin);
         System.gc();
         System.gc();
-
+        
         return true;
     }
 
     public boolean unloadRecursively(final Plugin plugin) {
-        final Stack<String> pluginFiles = unloadRecursively(plugin.getName(), plugin, new Stack<String>());
+        final ArrayList<String> pluginFiles = unloadRecursively(plugin.getName(), plugin, new ArrayList<String>());
         while (pluginFiles.size() > 0) {
-            enablePlugin(loadPlugin(pluginFiles.pop()));
+        	enablePlugin( loadPlugin( pluginFiles ) );
         }
         return true;
     }
-
+    
     // it could be shorter and more compact, but I wrote it just straight down
     // for making changes more easier (at least for me)
-    public Stack<String> unloadRecursively(final String doNotLoad, final Plugin plugin, final Stack<String> pluginFiles) {
+    // - Converted to ArrayList from Stack - Lvletei
+    public ArrayList<String> unloadRecursively(final String doNotLoad, final Plugin plugin, final ArrayList<String> pluginFiles) {
 
         if (!plugin.getName().equals(doNotLoad)) {
             final File file = getFile((JavaPlugin) plugin);
-            pluginFiles.push(file.getName());
+            if( !pluginFiles.contains( file.getName( ) ) )
+            	pluginFiles.add( file.getName( ) );
         }
 
         final PluginManager pm = Bukkit.getPluginManager();
@@ -349,7 +389,8 @@ public class PluginControl {
             if (depend != null) {
                 for (final String s : depend) {
                     if (s.equals(plugin.getName())) {
-                        unloadRecursively(doNotLoad, p, pluginFiles);
+                        //unloadRecursively(doNotLoad, p, pluginFiles);
+                    	disablePlugin( p );
                     }
                 }
             }
@@ -358,7 +399,8 @@ public class PluginControl {
             if (softDepend != null) {
                 for (final String s : softDepend) {
                     if (s.equals(plugin.getName())) {
-                        unloadRecursively(doNotLoad, p, pluginFiles);
+                        //unloadRecursively(doNotLoad, p, pluginFiles);
+                    	disablePlugin( p );
                     }
                 }
             }
@@ -371,7 +413,8 @@ public class PluginControl {
                 for (final String s : depend) {
                     final Plugin p = pm.getPlugin(s);
                     if (p != null) {
-                        unloadRecursively(doNotLoad, p, pluginFiles);
+                        //unloadRecursively(doNotLoad, p, pluginFiles);
+                    	disablePlugin( p );
                     }
                 }
             }
@@ -381,7 +424,8 @@ public class PluginControl {
                 for (final String s : softDepend) {
                     final Plugin p = pm.getPlugin(s);
                     if (p != null) {
-                        unloadRecursively(doNotLoad, p, pluginFiles);
+                        //unloadRecursively(doNotLoad, p, pluginFiles);
+                    	disablePlugin( p );
                     }
                 }
             }
